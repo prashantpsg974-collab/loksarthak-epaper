@@ -8,8 +8,32 @@
   ],
   "routes": [
     {
+      "src": "/style.css",
+      "dest": "server.js"
+    },
+    {
+      "src": "/app.js",
+      "dest": "server.js"
+    },
+    {
+      "src": "/manifest.json",
+      "dest": "server.js"
+    },
+    {
+      "src": "/sw.js",
+      "dest": "server.js"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
       "src": "/uploads/(.*)",
       "dest": "/uploads/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "server.js"
     },
     {
       "src": "/(.*)",

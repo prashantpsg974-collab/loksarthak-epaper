@@ -44,6 +44,29 @@ const upload = multer({
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Explicit Static File Handlers (ensures CSS/JS never fallback to HTML on Vercel/Node)
+app.get('/style.css', (req, res) => {
+  res.type('text/css');
+  res.sendFile(path.join(__dirname, 'style.css'));
+});
+
+app.get('/app.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(path.join(__dirname, 'app.js'));
+});
+
+app.get('/manifest.json', (req, res) => {
+  res.type('application/json');
+  res.sendFile(path.join(__dirname, 'manifest.json'));
+});
+
+app.get('/sw.js', (req, res) => {
+  res.type('application/javascript');
+  res.sendFile(path.join(__dirname, 'sw.js'));
+});
+
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(__dirname));
 
