@@ -1668,3 +1668,120 @@ button {
   opacity: 0.8;
 }
 
+/* --------------------------------------------------------------------------
+   Viewer Bottom Page Switcher & Fit Full Paper Controls
+   -------------------------------------------------------------------------- */
+.viewer-bottom-page-bar {
+  margin-top: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.page-switcher-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.quick-page-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 4px 2px;
+  scrollbar-width: thin;
+}
+
+.page-pill-btn {
+  background: var(--border-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+}
+
+.page-pill-btn:hover {
+  background: var(--border-color);
+  color: var(--primary);
+  transform: translateY(-2px);
+  border-color: var(--primary);
+}
+
+.page-pill-btn.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 3px 10px rgba(225, 29, 72, 0.35);
+  transform: scale(1.05);
+}
+
+.page-switch-btn {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.page-switch-btn:hover {
+  background: var(--border-light);
+  color: var(--primary);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.page-switch-btn.highlight {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
+}
+
+.page-switch-btn.highlight:hover {
+  background: linear-gradient(135deg, #0369a1, #075985);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(2, 132, 199, 0.4);
+}
+
+.page-switch-btn.full-paper-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
+}
+
+.page-switch-btn.full-paper-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(16, 185, 129, 0.4);
+}
+
+@media (max-width: 768px) {
+  .page-switcher-container {
+    justify-content: center;
+  }
+  .page-switch-btn span {
+    display: none;
+  }
+}
+

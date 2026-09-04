@@ -190,7 +190,9 @@
             <span id="zoomLevelText" class="zoom-level-text">100%</span>
             <button id="btnZoomIn" class="toolbar-btn" title="झूम वाढवा (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
             <button id="btnZoomReset" class="toolbar-btn" title="मूळ आकार (0)"><i class="fa-solid fa-arrows-rotate"></i> १००%</button>
-            <button id="btnZoomFit" class="toolbar-btn" title="स्क्रीननुसार ॲडजस्ट करा"><i class="fa-solid fa-expand"></i> फिट</button>
+            <button id="btnFitFullPaper" onclick="fitFullPaper()" class="toolbar-btn highlight" style="background: #10b981; border-color: #059669;" title="संपूर्ण पेपर स्क्रीनवर फिट करा (Make Full Paper Visible)">
+              <i class="fa-solid fa-expand"></i> <span>संपूर्ण पेपर पहा (Full View)</span>
+            </button>
           </div>
 
           <!-- Tools Group (Clip, Upload, Download, Fullscreen) -->
@@ -224,7 +226,7 @@
         <aside class="thumbnails-sidebar">
           <div class="thumbnails-sidebar-title">
             <span><i class="fa-solid fa-images"></i> पृष्ठ सूची</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">६ पाने</span>
+            <span id="sidebarPageCount" style="font-size: 0.75rem; color: var(--text-muted);">६ पाने</span>
           </div>
           <div id="thumbnailsList" class="thumbnails-list"></div>
         </aside>
@@ -247,6 +249,24 @@
 
               <!-- Interactive Crop / Snip Overlay Layer -->
               <div id="cropOverlayLayer" class="crop-overlay-layer"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Quick Page Switcher & Fit Controls -->
+          <div class="viewer-bottom-page-bar">
+            <div class="page-switcher-container">
+              <button class="page-switch-btn" onclick="prevPage()" title="मागील पृष्ठ (Previous Page)">
+                <i class="fa-solid fa-chevron-left"></i> <span>मागील पृष्ठ</span>
+              </button>
+              <div id="quickPagePills" class="quick-page-pills">
+                <!-- Dynamic Quick Page Numbers [1] [2] [3] [4] [5] [6] -->
+              </div>
+              <button class="page-switch-btn" onclick="nextPage()" title="पुढील पृष्ठ (Next Page)">
+                <span>पुढील पृष्ठ</span> <i class="fa-solid fa-chevron-right"></i>
+              </button>
+              <button class="page-switch-btn full-paper-btn" onclick="fitFullPaper()" title="संपूर्ण पेपर स्क्रीनवर स्पष्ट पहा">
+                <i class="fa-solid fa-expand"></i> <span>संपूर्ण पेपर पहा (Full Paper View)</span>
+              </button>
             </div>
           </div>
         </section>
@@ -576,6 +596,32 @@
     let pageNum = 1; // PDF.js is 1-indexed
     const scale = 1.5; // Adjust this to change the rendering resolution/zoom
 
+    // Helper function to update quick page pill buttons
+    function updateQuickPagePillsUI(total, current) {
+        const container = document.getElementById('quickPagePills');
+        if (!container) return;
+        container.innerHTML = '';
+        const pagesCount = total || (pdfDoc ? pdfDoc.numPages : 6);
+        const cur = current || pageNum;
+
+        for (let i = 1; i <= pagesCount; i++) {
+            const btn = document.createElement('button');
+            btn.className = `page-pill-btn ${i === cur ? 'active' : ''}`;
+            btn.innerText = `पृष्ठ ${i}`;
+            btn.title = `पृष्ठ ${i} वर जा`;
+            btn.onclick = function() {
+                if (pdfDoc) {
+                    pageNum = i;
+                    renderPage(pageNum);
+                    updatePaginationUI();
+                } else if (typeof goToPage === 'function') {
+                    goToPage(i);
+                }
+            };
+            container.appendChild(btn);
+        }
+    }
+
     // Helper function to update pagination controls & indicator text
     function updatePaginationUI() {
         const pageSelect = document.getElementById('pageSelect');
@@ -586,7 +632,45 @@
         if (pageIndicator && pdfDoc) {
             pageIndicator.innerText = `${pageNum} / ${pdfDoc.numPages}`;
         }
+        if (pdfDoc) {
+            updateQuickPagePillsUI(pdfDoc.numPages, pageNum);
+        }
     }
+
+    // Function to make full paper visible on screen
+    function fitFullPaper() {
+        const viewport = document.getElementById('paperCanvasViewport');
+        const canvas = document.getElementById('epaperCanvas');
+        const container = document.getElementById('paperPageContainer');
+        if (!viewport || !canvas) return;
+
+        const canvasWidth = canvas.width || 800;
+        const canvasHeight = canvas.height || 1200;
+        const availWidth = Math.max(300, viewport.clientWidth - 30);
+        const availHeight = Math.max(400, window.innerHeight - 220);
+
+        const scaleW = availWidth / canvasWidth;
+        const scaleH = availHeight / canvasHeight;
+        const fitScale = Math.min(scaleW, scaleH, 1.0);
+
+        if (container) {
+            container.style.transform = `scale(${fitScale})`;
+            container.style.transformOrigin = 'top center';
+        }
+        const zoomText = document.getElementById('zoomLevelText');
+        if (zoomText) {
+            zoomText.innerText = `${Math.round(fitScale * 100)}%`;
+        }
+        if (typeof state !== 'undefined') {
+            state.zoomLevel = fitScale;
+        }
+        viewport.scrollLeft = 0;
+        viewport.scrollTop = 0;
+        if (typeof showToast === 'function') {
+            showToast('🔍 संपूर्ण पेपर स्क्रीनवर फिट केला!');
+        }
+    }
+    window.fitFullPaper = fitFullPaper;
 
     // 1. Listen for the PDF file upload
     document.getElementById('pdfUpload').addEventListener('change', function(event) {
@@ -604,7 +688,9 @@
             // Load the PDF document
             pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
                 pdfDoc = pdf;
+                window.pdfDoc = pdf;
                 pageNum = 1; // Reset to page 1 on new upload
+                window.pageNum = 1;
 
                 // Clear and populate #pageSelect dropdown dynamically
                 const pageSelect = document.getElementById('pageSelect');
@@ -625,6 +711,12 @@
                     pageIndicator.innerText = `1 / ${pdf.numPages}`;
                 }
 
+                const sidebarPageCount = document.getElementById('sidebarPageCount');
+                if (sidebarPageCount) {
+                    sidebarPageCount.innerText = `${pdf.numPages} पाने`;
+                }
+
+                updateQuickPagePillsUI(pdf.numPages, 1);
                 renderPage(pageNum);
             }).catch(function(error) {
                 console.error('Error loading PDF:', error);
@@ -658,15 +750,19 @@
                 canvasContext: ctx,
                 viewport: viewport
             };
-            page.render(renderContext);
+            page.render(renderContext).promise.then(function() {
+                fitFullPaper();
+            });
         });
     }
+    window.renderPdfPage = renderPage;
 
     // 3. Navigation Controls Event Listeners
     // Previous Button (<) Listener
     document.getElementById('prevPage')?.addEventListener('click', function() {
         if (!pdfDoc || pageNum <= 1) return;
         pageNum--;
+        window.pageNum = pageNum;
         renderPage(pageNum);
         updatePaginationUI();
     });
@@ -675,6 +771,7 @@
     document.getElementById('nextPage')?.addEventListener('click', function() {
         if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
         pageNum++;
+        window.pageNum = pageNum;
         renderPage(pageNum);
         updatePaginationUI();
     });
@@ -683,8 +780,14 @@
     document.getElementById('pageSelect')?.addEventListener('change', function() {
         if (!pdfDoc) return;
         pageNum = parseInt(this.value, 10);
+        window.pageNum = pageNum;
         renderPage(pageNum);
         updatePaginationUI();
+    });
+
+    // Initialize initial quick pills on load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateQuickPagePillsUI(6, 1);
     });
   </script>
 </body>

@@ -609,6 +609,7 @@ async function renderPage(indexOrPageNum) {
     select.value = state.currentPage;
   }
   updateSidebarActiveThumbnail(state.currentPage);
+  renderQuickPagePills(state.totalPages, state.currentPage);
 
   const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
   if (!canvas) return;
@@ -1043,7 +1044,41 @@ function initControls() {
   initPanningEngine();
 }
 
+function renderQuickPagePills(totalPages, activePage) {
+  const container = document.getElementById('quickPagePills');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  const count = totalPages || state.totalPages || (window.pdfDoc ? window.pdfDoc.numPages : 6);
+  const cur = activePage || state.currentPage || window.pageNum || 1;
+
+  for (let i = 1; i <= count; i++) {
+    const btn = document.createElement('button');
+    btn.className = `page-pill-btn ${i === cur ? 'active' : ''}`;
+    btn.innerText = `पृष्ठ ${i}`;
+    btn.title = `पृष्ठ ${i} वर जा`;
+    btn.onclick = () => {
+      if (window.pdfDoc && typeof window.renderPdfPage === 'function') {
+        window.pageNum = i;
+        window.renderPdfPage(i);
+        if (typeof updatePaginationUI === 'function') updatePaginationUI();
+      } else {
+        goToPage(i);
+      }
+    };
+    container.appendChild(btn);
+  }
+}
+
 function goToPage(pageNumber) {
+  if (window.pdfDoc && typeof window.renderPdfPage === 'function') {
+    if (pageNumber < 1 || pageNumber > window.pdfDoc.numPages) return;
+    window.pageNum = pageNumber;
+    window.renderPdfPage(pageNumber);
+    if (typeof updatePaginationUI === 'function') updatePaginationUI();
+    return;
+  }
+
   if (uploadedPages.length > 0) {
     renderPage(pageNumber - 1);
   } else {
@@ -1054,6 +1089,17 @@ function goToPage(pageNumber) {
 }
 
 function prevPage() {
+  if (window.pdfDoc && typeof window.renderPdfPage === 'function') {
+    if (window.pageNum > 1) {
+      window.pageNum--;
+      window.renderPdfPage(window.pageNum);
+      if (typeof updatePaginationUI === 'function') updatePaginationUI();
+    } else {
+      showToast('हे पहिले पृष्ठ आहे!');
+    }
+    return;
+  }
+
   if (uploadedPages.length > 0) {
     if (currentPageIndex > 0) {
       currentPageIndex--;
@@ -1071,6 +1117,17 @@ function prevPage() {
 }
 
 function nextPage() {
+  if (window.pdfDoc && typeof window.renderPdfPage === 'function') {
+    if (window.pageNum < window.pdfDoc.numPages) {
+      window.pageNum++;
+      window.renderPdfPage(window.pageNum);
+      if (typeof updatePaginationUI === 'function') updatePaginationUI();
+    } else {
+      showToast('हे शेवटचे पृष्ठ आहे!');
+    }
+    return;
+  }
+
   if (uploadedPages.length > 0) {
     if (currentPageIndex < uploadedPages.length - 1) {
       currentPageIndex++;
@@ -1094,6 +1151,7 @@ function setZoom(level) {
 
   if (container) {
     container.style.transform = `scale(${state.zoomLevel})`;
+    container.style.transformOrigin = 'top center';
   }
   if (zoomText) {
     zoomText.innerText = `${Math.round(state.zoomLevel * 100)}%`;
@@ -1101,12 +1159,31 @@ function setZoom(level) {
 }
 
 function fitToWidth() {
+  fitFullPaper();
+}
+
+function fitFullPaper() {
   const viewport = document.getElementById('paperCanvasViewport');
-  if (!viewport) return;
-  const availableWidth = viewport.clientWidth - 40;
-  const zoom = availableWidth / 900;
-  setZoom(zoom);
-  showToast('पृष्ठ स्क्रीननुसार ॲडजस्ट केले!');
+  const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
+  const container = document.getElementById('paperPageContainer');
+  if (!viewport || !canvas) return;
+
+  const canvasWidth = canvas.width || 800;
+  const canvasHeight = canvas.height || 1200;
+  const availWidth = Math.max(300, viewport.clientWidth - 30);
+  const availHeight = Math.max(400, window.innerHeight - 220);
+
+  const scaleW = availWidth / canvasWidth;
+  const scaleH = availHeight / canvasHeight;
+  const fitScale = Math.min(scaleW, scaleH, 1.0);
+
+  setZoom(fitScale);
+  if (container) {
+    container.style.transformOrigin = 'top center';
+  }
+  viewport.scrollLeft = 0;
+  viewport.scrollTop = 0;
+  showToast('🔍 संपूर्ण पेपर स्क्रीनवर फिट केला (Full Paper Visible)!');
 }
 
 function toggleFullscreen() {
