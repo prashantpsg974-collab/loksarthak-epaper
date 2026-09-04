@@ -3,10 +3,13 @@
  * Core Engine & Interactive Controls
  */
 
+// URL query parameters
+const urlParams = new URLSearchParams(window.location.search);
+
 // Global State
 const state = {
-  currentEdition: 'jalna_main',
-  currentDate: '2026-09-04',
+  currentEdition: urlParams.get('edition') || 'jalna_main',
+  currentDate: urlParams.get('date') || '2026-09-04',
   currentPage: 1,
   totalPages: 6,
   zoomLevel: 1.0,
@@ -20,8 +23,15 @@ const state = {
   speechSynthesisActive: false,
   isPanning: false,
   panStart: { x: 0, y: 0 },
-  panOffset: { x: 0, y: 0 }
+  panOffset: { x: 0, y: 0 },
+  loadedEpaperData: null,
+  pdfDoc: null
 };
+
+// PDF.js worker setup for native PDF rendering
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
 
 // Regional Editions Metadata
 const EDITIONS = {
@@ -298,21 +308,6 @@ const VIDEO_NEWS = [
   }
 ];
 
-// Initialize on DOM Ready
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme();
-  initTicker();
-  initVideoGallery();
-  initSidebarThumbnails();
-  initCanvasViewer();
-  initControls();
-  initHotspots();
-  initArchiveCalendar();
-  initPWA();
-  renderPage(state.currentPage);
-  renderEditionCardThumbs();
-});
-
 function renderEditionCardThumbs() {
   for (let i = 1; i <= 5; i++) {
     const canvas = document.getElementById(`editionThumb${i}`);
@@ -354,7 +349,6 @@ function renderEditionCardThumbs() {
   }
 }
 
-
 // Theme Management
 function initTheme() {
   document.documentElement.setAttribute('data-theme', state.theme);
@@ -393,16 +387,12 @@ function initTicker() {
     </div>
   `).join('');
 
-  // Duplicate for seamless infinite scroll
   tickerTrack.innerHTML = contentHtml + contentHtml;
 }
 
 // Video Gallery Setup
 function initVideoGallery() {
   const playlistContainer = document.getElementById('videoPlaylistColumn');
-  const mainIframe = document.getElementById('mainVideoIframe');
-  const mainTitle = document.getElementById('mainVideoTitle');
-
   if (!playlistContainer) return;
 
   playlistContainer.innerHTML = VIDEO_NEWS.map((vid, idx) => `
@@ -454,7 +444,6 @@ function initSidebarThumbnails() {
     `;
     sidebar.appendChild(thumbItem);
 
-    // Draw mini thumbnail on canvas
     setTimeout(() => drawMiniThumbnail(p), 50);
   }
 }
@@ -466,11 +455,9 @@ function drawMiniThumbnail(pageNumber) {
   const w = canvas.width;
   const h = canvas.height;
 
-  // Background
   ctx.fillStyle = '#f8f9fa';
   ctx.fillRect(0, 0, w, h);
 
-  // Masthead bar
   ctx.fillStyle = '#c81e1e';
   ctx.fillRect(8, 8, w - 16, 16);
   ctx.fillStyle = '#ffffff';
@@ -478,43 +465,44 @@ function drawMiniThumbnail(pageNumber) {
   ctx.textAlign = 'center';
   ctx.fillText('दैनिक लोकसार्थक', w / 2, 20);
 
-  // Page title subbar
   ctx.fillStyle = '#334155';
   ctx.font = '7px sans-serif';
   ctx.fillText(`पृष्ठ ${pageNumber}`, w / 2, 32);
 
-  // Simulated newspaper layout blocks
   ctx.fillStyle = '#e2e8f0';
-  ctx.fillRect(10, 40, w - 20, 45); // Lead story box
+  ctx.fillRect(10, 40, w - 20, 45);
 
   ctx.fillStyle = '#94a3b8';
   ctx.fillRect(14, 46, (w - 28) * 0.8, 6);
   ctx.fillRect(14, 56, (w - 28) * 0.95, 4);
   ctx.fillRect(14, 64, (w - 28) * 0.9, 4);
-  ctx.fillRect(14, 72, (w - 28) * 0.6, 4);
 
-  // 2 column blocks
+  const halfW = (w - 25) / 2;
   ctx.fillStyle = '#e2e8f0';
-  ctx.fillRect(10, 92, (w - 25) / 2, 60);
-  ctx.fillRect(10 + (w - 25) / 2 + 5, 92, (w - 25) / 2, 60);
+  ctx.fillRect(10, 92, halfW, 60);
+  ctx.fillRect(10 + halfW + 5, 92, halfW, 60);
 
-  // Lines
   ctx.fillStyle = '#cbd5e1';
   ctx.fillRect(14, 98, 50, 4);
   ctx.fillRect(14, 106, 55, 3);
-  ctx.fillRect(14, 112, 52, 3);
-
-  ctx.fillRect(10 + (w - 25) / 2 + 9, 98, 50, 4);
-  ctx.fillRect(10 + (w - 25) / 2 + 9, 106, 55, 3);
-  ctx.fillRect(10 + (w - 25) / 2 + 9, 112, 52, 3);
-
-  // Bottom 3-column blocks
-  const bW = (w - 30) / 3;
-  ctx.fillStyle = '#f1f5f9';
-  ctx.fillRect(10, 160, bW, 68);
-  ctx.fillRect(10 + bW + 5, 160, bW, 68);
-  ctx.fillRect(10 + (bW + 5) * 2, 160, bW, 68);
+  ctx.fillRect(10 + halfW + 9, 98, 50, 4);
+  ctx.fillRect(10 + halfW + 9, 106, 55, 3);
 }
+
+// Initialize on DOM Ready
+document.addEventListener('DOMContentLoaded', () => {
+  initTheme();
+  initTicker();
+  initVideoGallery();
+  initControls();
+  initHotspots();
+  initArchiveCalendar();
+  initPWA();
+  renderEditionCardThumbs();
+  
+  // Dynamic e-paper loader for current date
+  loadEpaperForDate(state.currentDate, state.currentEdition);
+});
 
 // Canvas Viewer Setup & Image / Dynamic Newspaper Rendering
 function initCanvasViewer() {
@@ -531,7 +519,6 @@ function initCanvasViewer() {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
   };
   img.onerror = function() {
-    // If placeholder image cannot be reached, fallback to high-res interactive vector rendering
     canvas.width = 900;
     canvas.height = 1350;
     renderPage(state.currentPage);
@@ -539,9 +526,109 @@ function initCanvasViewer() {
   img.src = 'https://via.placeholder.com/800x1200?text=E-Paper+Page+1';
 }
 
-function renderPage(pageNumber) {
+// Dynamic E-Paper Loader from Backend API
+async function loadEpaperForDate(date, edition = 'jalna_main') {
+  state.currentDate = date;
+  state.currentEdition = edition;
+  state.currentPage = 1;
+
+  try {
+    const res = await fetch(`/api/epaper?date=${date}&edition=${edition}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.epaper) {
+        state.loadedEpaperData = data.epaper;
+        state.totalPages = data.epaper.pageCount || 6;
+
+        // If PDF format, load with pdf.js
+        if (data.epaper.type === 'pdf' && window.pdfjsLib) {
+          const loadingTask = pdfjsLib.getDocument(data.epaper.fileUrl);
+          state.pdfDoc = await loadingTask.promise;
+          state.totalPages = state.pdfDoc.numPages;
+        } else {
+          state.pdfDoc = null;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch epaper from backend API, using local dataset:', err);
+    state.loadedEpaperData = null;
+    state.pdfDoc = null;
+    state.totalPages = EDITIONS[edition]?.pages || 6;
+  }
+
+  updatePageDropdown();
+  initSidebarThumbnails();
+  renderPage(1);
+}
+
+function updatePageDropdown() {
+  const select = document.getElementById('pageSelectDropdown');
+  if (!select) return;
+
+  select.innerHTML = '';
+  for (let i = 1; i <= state.totalPages; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    const pageTitle = (state.loadedEpaperData?.pages && state.loadedEpaperData.pages[i - 1]?.title) ||
+                      (EPAPER_DATABASE.pages[i]?.title) ||
+                      `पृष्ठ ${i}`;
+    opt.innerText = `पृष्ठ ${i} - ${pageTitle.split('(')[0]}`;
+    select.appendChild(opt);
+  }
+}
+
+async function renderPage(pageNumber) {
   state.currentPage = pageNumber;
-  const pageData = EPAPER_DATABASE.pages[pageNumber];
+  updatePageUI(pageNumber);
+
+  const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  // 1. If PDF Document is loaded, render page with pdf.js
+  if (state.pdfDoc) {
+    try {
+      const page = await state.pdfDoc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 1.5 });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      
+      // Clear hotspot layer for PDF
+      const hotspotLayer = document.getElementById('hotspotLayer');
+      if (hotspotLayer) hotspotLayer.innerHTML = '';
+
+      const renderContext = {
+        canvasContext: ctx,
+        viewport: viewport
+      };
+      await page.render(renderContext).promise;
+      return;
+    } catch (pdfErr) {
+      console.error('PDF page render error:', pdfErr);
+    }
+  }
+
+  // 2. If uploaded image pages are loaded
+  if (state.loadedEpaperData?.type === 'images' && state.loadedEpaperData.pages?.[pageNumber - 1]?.imageUrl) {
+    const imgUrl = state.loadedEpaperData.pages[pageNumber - 1].imageUrl;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      canvas.width = img.naturalWidth || 900;
+      canvas.height = img.naturalHeight || 1350;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = imgUrl;
+    return;
+  }
+
+  // 3. Fallback: High-Res Interactive Vector Marathi Layout
+  renderVectorNewspaperPage(pageNumber);
+}
+
+function renderVectorNewspaperPage(pageNumber) {
+  const pageData = EPAPER_DATABASE.pages[pageNumber] || EPAPER_DATABASE.pages[1];
   if (!pageData) return;
 
   const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
@@ -1271,35 +1358,59 @@ function downloadImage(dataUrl, filename) {
 }
 
 // Archive Calendar Management
-function initArchiveCalendar() {
+async function initArchiveCalendar() {
   const calendarModal = document.getElementById('archiveModal');
   const openBtn = document.getElementById('btnOpenArchiveModal');
   const grid = document.getElementById('archiveCalendarGrid');
 
   if (openBtn && calendarModal) {
-    openBtn.onclick = () => calendarModal.classList.add('active');
+    openBtn.onclick = () => {
+      calendarModal.classList.add('active');
+      initArchiveCalendar(); // Refresh dates on open
+    };
   }
 
   if (!grid) return;
 
-  // Render past 30 days
+  // Fetch available archives from backend API
+  let availableDates = [];
+  try {
+    const res = await fetch('/api/archives');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.archives) {
+        availableDates = data.archives.map(a => a.date);
+      }
+    }
+  } catch (e) {
+    console.warn('Could not fetch archives list:', e);
+  }
+
+  // Days header
   const daysHeader = ['रवि', 'सोम', 'मंगळ', 'बुध', 'गुरु', 'शुक्र', 'शनि'];
   grid.innerHTML = daysHeader.map(d => `<div class="cal-day-header">${d}</div>`).join('');
 
+  // Render past 30 days
   for (let i = 1; i <= 30; i++) {
     const day = i;
-    const isToday = (day === 4);
+    const dateStr = `2026-09-${day < 10 ? '0' + day : day}`;
+    const hasPaper = availableDates.includes(dateStr) || (day <= 4);
+    const isSelected = (dateStr === state.currentDate);
+
     const dateCell = document.createElement('div');
-    dateCell.className = `cal-date-cell ${isToday ? 'today active' : ''}`;
-    dateCell.innerText = `${day < 10 ? '०' : ''}${day} सप्टें`;
+    dateCell.className = `cal-date-cell ${isSelected ? 'today active' : ''} ${hasPaper ? 'has-paper' : ''}`;
+    dateCell.innerHTML = `
+      <span>${day < 10 ? '०' : ''}${day} सप्टें</span>
+      ${hasPaper ? '<span style="font-size:0.65rem; display:block; color:var(--primary); font-weight:700;">● अंक उपलब्ध</span>' : ''}
+    `;
+
     dateCell.onclick = () => {
       document.querySelectorAll('.cal-date-cell').forEach(c => c.classList.remove('active'));
       dateCell.classList.add('active');
-      state.currentDate = `2026-09-${day < 10 ? '0' + day : day}`;
-      renderPage(1);
+      loadEpaperForDate(dateStr, state.currentEdition);
       closeAllModals();
-      showToast(`अंक लोड झाला: ${day} सप्टेंबर २०२६`);
     };
+
     grid.appendChild(dateCell);
   }
 }

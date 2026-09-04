@@ -2,7 +2,9 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
+import multer from 'multer';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
@@ -13,15 +15,181 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Ensure directories exist
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const DATA_DIR = path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_DIR, 'editions.json');
+
+if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2), 'utf8');
+
+// Storage config for Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOADS_DIR);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const cleanName = `${Date.now()}_${Math.round(Math.random() * 1e6)}${ext}`;
+    cb(null, cleanName);
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 } // 50 MB max
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(__dirname));
 
-/**
- * AI Agent Chat API Route using Vercel AI SDK (OpenAI & Anthropic Claude support)
- * System Prompt: "You are a helpful assistant for Dainik Loksarthak readers. Answer questions based on the Marathi news content provided."
- */
+// Database Helper
+function getEditionsDB() {
+  try {
+    const raw = fs.readFileSync(DB_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Error reading editions DB:', err);
+    return [];
+  }
+}
+
+function saveEditionsDB(data) {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('Error writing to editions DB:', err);
+    return false;
+  }
+}
+
+// --------------------------------------------------------------------------
+// 1. ADMIN UPLOAD API ROUTE (/api/upload)
+// --------------------------------------------------------------------------
+app.post('/api/upload', upload.fields([
+  { name: 'pdfFile', maxCount: 1 },
+  { name: 'pageImages', maxCount: 30 }
+]), async (req, res) => {
+  try {
+    const { date, edition = 'jalna_main', title, adminPasscode } = req.body;
+
+    // Optional admin security check (e.g. passcode or open in dev)
+    if (process.env.ADMIN_PASSWORD && adminPasscode !== process.env.ADMIN_PASSWORD) {
+      return res.status(401).json({ error: 'अनधिकृत प्रवेश: पासवर्ड चुकीचा आहे (Invalid Admin Passcode).' });
+    }
+
+    if (!date) {
+      return res.status(400).json({ error: 'तारीख निवडणे बंधनकारक आहे (Date is required).' });
+    }
+
+    const files = req.files || {};
+    const pdfFile = files.pdfFile && files.pdfFile[0];
+    const pageImages = files.pageImages || [];
+
+    if (!pdfFile && pageImages.length === 0) {
+      return res.status(400).json({ error: 'कृपया एक PDF फाईल किंवा पृष्ठांच्या इमेजेस अपलोड करा.' });
+    }
+
+    const editions = getEditionsDB();
+    const id = `epaper_${date}_${edition}`;
+
+    let record = {
+      id,
+      date,
+      edition,
+      title: title || `दैनिक लोकसार्थक जालना - ${date}`,
+      uploadedAt: new Date().toISOString()
+    };
+
+    if (pdfFile) {
+      record.type = 'pdf';
+      record.fileUrl = `/uploads/${pdfFile.filename}`;
+      record.originalName = pdfFile.originalname;
+      record.pageCount = parseInt(req.body.pageCount, 10) || 6;
+      record.pages = Array.from({ length: record.pageCount }, (_, i) => ({
+        page: i + 1,
+        title: `पृष्ठ ${i + 1}`
+      }));
+    } else {
+      record.type = 'images';
+      record.pageCount = pageImages.length;
+      record.pages = pageImages.map((img, index) => ({
+        page: index + 1,
+        title: `पृष्ठ ${index + 1}`,
+        imageUrl: `/uploads/${img.filename}`
+      }));
+    }
+
+    // Upsert entry in DB
+    const existingIndex = editions.findIndex(e => e.date === date && e.edition === edition);
+    if (existingIndex >= 0) {
+      editions[existingIndex] = record;
+    } else {
+      editions.unshift(record);
+    }
+
+    saveEditionsDB(editions);
+
+    res.json({
+      success: true,
+      message: `ई-पेपर यशस्वीरित्या अपलोड झाला (${date})!`,
+      edition: record
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'ई-पेपर अपलोड करताना त्रुटी आली: ' + error.message });
+  }
+});
+
+// --------------------------------------------------------------------------
+// 2. ARCHIVES API ROUTE (/api/archives)
+// --------------------------------------------------------------------------
+app.get('/api/archives', (req, res) => {
+  const editions = getEditionsDB();
+  const archives = editions.map(e => ({
+    id: e.id,
+    date: e.date,
+    edition: e.edition,
+    title: e.title,
+    pageCount: e.pageCount,
+    type: e.type,
+    uploadedAt: e.uploadedAt
+  }));
+  res.json({ archives });
+});
+
+// --------------------------------------------------------------------------
+// 3. GET SPECIFIC / LATEST E-PAPER (/api/epaper)
+// --------------------------------------------------------------------------
+app.get('/api/epaper', (req, res) => {
+  const { date, edition } = req.query;
+  const editions = getEditionsDB();
+
+  let match;
+  if (date) {
+    match = editions.find(e => e.date === date && (!edition || e.edition === edition));
+  }
+  
+  // Default to latest
+  if (!match && editions.length > 0) {
+    match = editions[0];
+  }
+
+  if (!match) {
+    return res.status(404).json({ error: 'या तारखेचा ई-पेपर उपलब्ध नाही.' });
+  }
+
+  res.json({ epaper: match });
+});
+
+// --------------------------------------------------------------------------
+// 4. AI AGENT CHAT ROUTE (/api/chat)
+// --------------------------------------------------------------------------
 app.post('/api/chat', async (req, res) => {
   try {
     const { messages, newsContext } = req.body;
@@ -39,13 +207,11 @@ ${newsContext ? `\nToday's Marathi Newspaper Content:\n${newsContext}` : ''}`;
     } else if (process.env.ANTHROPIC_API_KEY) {
       model = anthropic('claude-3-5-sonnet-20241022');
     } else {
-      console.warn('Warning: Neither OPENAI_API_KEY nor ANTHROPIC_API_KEY is configured.');
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-      res.write('दैनिक लोकसार्थक AI सहाय्यक: कृपया सर्व्हरवर OPENAI_API_KEY किंवा ANTHROPIC_API_KEY कॉन्फिगर करा. (Please configure OPENAI_API_KEY or ANTHROPIC_API_KEY in .env file to enable live AI responses).');
+      res.write('दैनिक लोकसार्थक AI सहाय्यक: कृपया सर्व्हरवर OPENAI_API_KEY किंवा ANTHROPIC_API_KEY कॉन्फिगर करा.');
       return res.end();
     }
 
-    // Initialize streaming with Vercel AI SDK
     const result = streamText({
       model: model,
       system: systemPrompt,
@@ -57,25 +223,19 @@ ${newsContext ? `\nToday's Marathi Newspaper Content:\n${newsContext}` : ''}`;
       maxTokens: 1000
     });
 
-    // Stream text response to client
     result.pipeTextStreamToResponse(res);
   } catch (error) {
-    console.error('Error in /api/chat stream:', error);
-    res.status(500).json({ error: 'AI Agent failed to generate response: ' + error.message });
+    console.error('AI chat error:', error);
+    res.status(500).json({ error: 'AI Agent error: ' + error.message });
   }
 });
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    edition: 'Dainik Loksarthak E-Paper',
-    aiSDK: 'Vercel AI SDK (@ai-sdk/openai, @ai-sdk/anthropic)',
-    apiKeyConfigured: Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY)
-  });
+// Admin Route
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
-// Fallback to index.html for client-side single page navigation
+// Fallback to index.html for client-side navigation
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -83,7 +243,10 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`📰 Dainik Loksarthak E-Paper Server Running!`);
-  console.log(`🌐 Local URL: http://localhost:${PORT}`);
+  console.log(`🌐 Public Portal: http://localhost:${PORT}`);
+  console.log(`🔒 Admin Panel:  http://localhost:${PORT}/admin`);
+  console.log(`📂 Uploads API:  http://localhost:${PORT}/api/upload`);
+  console.log(`📅 Archives API: http://localhost:${PORT}/api/archives`);
   console.log(`🤖 AI Agent API: http://localhost:${PORT}/api/chat`);
   console.log(`====================================================`);
 });

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>प्रशासकीय कक्ष (Admin Portal) - दैनिक लोकसार्थक ई-पेपर</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+  
+  <style>
+    .admin-wrapper {
+      max-width: 960px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .admin-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      margin-bottom: 30px;
+    }
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-family: var(--font-marathi);
+      background: var(--bg-body);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(200, 30, 30, 0.15);
+    }
+    .dropzone-box {
+      border: 2px dashed var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px 20px;
+      text-align: center;
+      background: var(--bg-surface-alt);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .dropzone-box:hover, .dropzone-box.dragover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .tab-pills {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab-pill {
+      padding: 10px 20px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab-pill.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    .history-table th, .history-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .history-table th {
+      background: var(--bg-surface-alt);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="top-bar">
+    <div class="container">
+      <div class="top-bar-inner">
+        <div style="font-weight: 700; font-size: 1.05rem;">
+          <i class="fa-solid fa-lock" style="color:var(--primary);"></i> दैनिक लोकसार्थक ई-पेपर - ॲडमिन पॅनेल
+        </div>
+        <div>
+          <a href="./index.html" class="btn-join-whatsapp" style="background: #334155;">
+            <i class="fa-solid fa-arrow-left"></i> मुख्य ई-पेपरवर जा
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="admin-wrapper">
+    
+    <!-- Upload Card -->
+    <div class="admin-card">
+      <div class="admin-header">
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">
+            <i class="fa-solid fa-cloud-arrow-up" style="color: var(--primary);"></i> नवीन ई-पेपर अंक अपलोड करा
+          </h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px;">
+            दैनिक अंक प्रकाशित करण्यासाठी PDF किंवा स्वतंत्र पानांच्या इमेजेस अपलोड करा.
+          </p>
+        </div>
+      </div>
+
+      <!-- Upload Format Tabs -->
+      <div class="tab-pills">
+        <button id="tabPdf" class="tab-pill active" onclick="switchUploadTab('pdf')">
+          <i class="fa-solid fa-file-pdf"></i> संपूर्ण PDF फाईल
+        </button>
+        <button id="tabImages" class="tab-pill" onclick="switchUploadTab('images')">
+          <i class="fa-solid fa-images"></i> पृष्ठांच्या स्वतंत्र इमेजेस (JPG/PNG)
+        </button>
+      </div>
+
+      <form id="uploadEpaperForm" onsubmit="handleEpaperUpload(event)">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Date -->
+          <div class="form-group">
+            <label class="form-label" for="uploadDate"><i class="fa-solid fa-calendar"></i> अंकाची तारीख (Date) *</label>
+            <input type="date" id="uploadDate" class="form-control" required />
+          </div>
+
+          <!-- Edition -->
+          <div class="form-group">
+            <label class="form-label" for="uploadEdition"><i class="fa-solid fa-location-dot"></i> आवृत्ती (Edition) *</label>
+            <select id="uploadEdition" class="form-control">
+              <option value="jalna_main">जालना मुख्य आवृत्ती</option>
+              <option value="bhokardan">भोकरदन - जाफ्राबाद</option>
+              <option value="partur">परतूर - मंठा</option>
+              <option value="ambad">अंबड - घनसावंगी</option>
+              <option value="marathwada">मराठवाडा विशेष</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label" for="uploadTitle"><i class="fa-solid fa-heading"></i> अंकाचे शीर्षक / तपशील (Title)</label>
+          <input type="text" id="uploadTitle" class="form-control" placeholder="उदा. दैनिक लोकसार्थक जालना मुख्य अंक" />
+        </div>
+
+        <!-- PDF Upload Input Block -->
+        <div id="pdfUploadBlock" class="form-group">
+          <label class="form-label"><i class="fa-solid fa-file-pdf"></i> PDF फाईल निवडा *</label>
+          <div class="dropzone-box" onclick="document.getElementById('pdfFileInput').click()">
+            <i class="fa-solid fa-file-pdf" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 12px;"></i>
+            <div style="font-weight: 700; font-size: 1.05rem;">येथे क्लिक करून PDF निवडा किंवा ड्रॅग करा</div>
+            <div id="pdfFileNameDisplay" style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 6px;">कमाल आकार: ५० MB</div>
+          </div>
+          <input type="file" id="pdfFileInput" accept="application/pdf" style="display: none;" onchange="onPdfFileSelected(event)" />
+          
+          <div class="form-group" style="margin-top: 15px;">
+            <label class="form-label" for="pdfPageCount">एकूण पृष्ठे (Page Count)</label>
+            <input type="number" id="pdfPageCount" class="form-control" value="6" min="1" max="50" style="max-width: 140px;" />
+          </div>
+        </div>
+
+        <!-- Images Upload Input Block -->
+        <div id="imagesUploadBlock" class="form-group" style="display: none;">
+          <label class="form-label"><i class="fa-solid fa-images"></i> सर्व पानांच्या इमेजेस निवडा (Select Page 1 to N Images) *</label>
+          <div class="dropzone-box" onclick="document.getElementById('imagesFileInput').click()">
+            <i class="fa-solid fa-images" style="font-size: 2.5rem; color: #0284c7; margin-bottom: 12px;"></i>
+            <div style="font-weight: 700; font-size: 1.05rem;">सर्व पानांच्या इमेजेस निवडा (Page 1, 2, 3...)</div>
+            <div id="imagesCountDisplay" style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 6px;">JPG, PNG किंवा WebP</div>
+          </div>
+          <input type="file" id="imagesFileInput" accept="image/*" multiple style="display: none;" onchange="onImagesSelected(event)" />
+        </div>
+
+        <!-- Passcode (Optional) -->
+        <div class="form-group">
+          <label class="form-label" for="adminPasscode"><i class="fa-solid fa-key"></i> ॲडमिन पासवर्ड (Admin Passcode - Optional)</label>
+          <input type="password" id="adminPasscode" class="form-control" placeholder="पासवर्ड टाका (नसल्यास रिकामे ठेवा)" />
+        </div>
+
+        <!-- Submit Button -->
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 25px;">
+          <button type="reset" class="btn-primary" style="background: var(--border-color); color: var(--text-primary); border: none;">
+            रीसेट
+          </button>
+          <button type="submit" id="btnSubmitUpload" class="btn-primary" style="padding: 12px 30px; font-size: 1.05rem;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर प्रकाशित करा (Publish Now)
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Published History Card -->
+    <div class="admin-card">
+      <div class="admin-header">
+        <div>
+          <h3 style="font-size: 1.2rem; font-weight: 800; color: var(--text-primary);">
+            <i class="fa-solid fa-newspaper" style="color:var(--primary);"></i> प्रकाशित अंकांचा संग्रह (Published Archives)
+          </h3>
+        </div>
+        <button class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem;" onclick="loadPublishedArchives()">
+          <i class="fa-solid fa-rotate"></i> रीफ्रेश
+        </button>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>तारीख</th>
+              <th>आवृत्ती</th>
+              <th>प्रकार</th>
+              <th>पृष्ठे</th>
+              <th>शीर्षक</th>
+              <th>कृती</th>
+            </tr>
+          </thead>
+          <tbody id="archivesTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">लोड होत आहे...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let currentUploadMode = 'pdf';
+    let selectedPdf = null;
+    let selectedImages = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Set today's date in picker
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('uploadDate').value = today;
+      loadPublishedArchives();
+    });
+
+    function switchUploadTab(mode) {
+      currentUploadMode = mode;
+      document.getElementById('tabPdf').classList.toggle('active', mode === 'pdf');
+      document.getElementById('tabImages').classList.toggle('active', mode === 'images');
+      document.getElementById('pdfUploadBlock').style.display = mode === 'pdf' ? 'block' : 'none';
+      document.getElementById('imagesUploadBlock').style.display = mode === 'images' ? 'block' : 'none';
+    }
+
+    function onPdfFileSelected(e) {
+      const file = e.target.files[0];
+      if (file) {
+        selectedPdf = file;
+        document.getElementById('pdfFileNameDisplay').innerHTML = `<strong>निवडलेली फाईल:</strong> ${file.name} (${(file.size / (1024*1024)).toFixed(2)} MB)`;
+      }
+    }
+
+    function onImagesSelected(e) {
+      const files = Array.from(e.target.files);
+      if (files.length > 0) {
+        selectedImages = files;
+        document.getElementById('imagesCountDisplay').innerHTML = `<strong>${files.length} पाने निवडली:</strong> ` + files.map(f => f.name).join(', ');
+      }
+    }
+
+    async function handleEpaperUpload(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitUpload');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> अपलोड होत आहे...';
+
+      const formData = new FormData();
+      formData.append('date', document.getElementById('uploadDate').value);
+      formData.append('edition', document.getElementById('uploadEdition').value);
+      formData.append('title', document.getElementById('uploadTitle').value);
+      formData.append('adminPasscode', document.getElementById('adminPasscode').value);
+
+      if (currentUploadMode === 'pdf') {
+        if (!selectedPdf) {
+          alert('कृपया PDF फाईल निवडा.');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर प्रकाशित करा';
+          return;
+        }
+        formData.append('pdfFile', selectedPdf);
+        formData.append('pageCount', document.getElementById('pdfPageCount').value);
+      } else {
+        if (selectedImages.length === 0) {
+          alert('कृपया किमान १ पृष्ठाची इमेज निवडा.');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर प्रकाशित करा';
+          return;
+        }
+        selectedImages.forEach(img => formData.append('pageImages', img));
+      }
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('🎉 ' + data.message);
+          window.location.href = `index.html?date=${document.getElementById('uploadDate').value}`;
+        } else {
+          alert('❌ त्रुटी: ' + (data.error || 'अपलोड अयशस्वी.'));
+        }
+      } catch (err) {
+        alert('❌ सर्व्हरशी संपर्क साधताना त्रुटी: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर प्रकाशित करा';
+        loadPublishedArchives();
+      }
+    }
+
+    async function loadPublishedArchives() {
+      const tbody = document.getElementById('archivesTableBody');
+      try {
+        const res = await fetch('/api/archives');
+        const data = await res.json();
+        if (data.archives && data.archives.length > 0) {
+          tbody.innerHTML = data.archives.map(item => `
+            <tr>
+              <td><strong>${item.date}</strong></td>
+              <td>${item.edition}</td>
+              <td><span style="background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:4px; font-weight:700; font-size:0.8rem;">${item.type?.toUpperCase() || 'STD'}</span></td>
+              <td>${item.pageCount || 6} पाने</td>
+              <td>${item.title}</td>
+              <td>
+                <a href="index.html?date=${item.date}&edition=${item.edition}" target="_blank" style="color:var(--primary); font-weight:700;">
+                  <i class="fa-solid fa-eye"></i> अंक पहा
+                </a>
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">कोणताही अंक उपलब्ध नाही.</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: red;">आर्काइव्ह्ज लोड करताना त्रुटी.</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+[
+  {
+    "id": "epaper_2026-09-04_jalna_main",
+    "date": "2026-09-04",
+    "edition": "jalna_main",
+    "title": "दैनिक लोकसार्थक जालना मुख्य अंक",
+    "type": "template",
+    "pageCount": 6,
+    "pages": [
+      { "page": 1, "title": "मुख्य पृष्ठ - जालना ठळक घडामोडी" },
+      { "page": 2, "title": "जालना शहर व क्राईम वार्ता" },
+      { "page": 3, "title": "मराठवाडा विशेष" },
+      { "page": 4, "title": "कृषी, व्यापार व बाजारभाव" },
+      { "page": 5, "title": "क्रीडा व देश-विदेश" },
+      { "page": 6, "title": "संपादकीय व विचारमंथन" }
+    ],
+    "uploadedAt": "2026-09-04T06:00:00.000Z"
+  },
+  {
+    "id": "epaper_2026-09-03_jalna_main",
+    "date": "2026-09-03",
+    "edition": "jalna_main",
+    "title": "दैनिक लोकसार्थक जालना - ०३ सप्टेंबर",
+    "type": "template",
+    "pageCount": 6,
+    "pages": [
+      { "page": 1, "title": "मुख्य पृष्ठ" },
+      { "page": 2, "title": "जालना शहर" },
+      { "page": 3, "title": "मराठवाडा" },
+      { "page": 4, "title": "बाजारभाव" },
+      { "page": 5, "title": "क्रीडा" },
+      { "page": 6, "title": "संपादकीय" }
+    ],
+    "uploadedAt": "2026-09-03T06:00:00.000Z"
+  },
+  {
+    "id": "epaper_2026-09-02_jalna_main",
+    "date": "2026-09-02",
+    "edition": "jalna_main",
+    "title": "दैनिक लोकसार्थक जालना - ०२ सप्टेंबर",
+    "type": "template",
+    "pageCount": 6,
+    "pages": [
+      { "page": 1, "title": "मुख्य पृष्ठ" },
+      { "page": 2, "title": "जालना शहर" },
+      { "page": 3, "title": "मराठवाडा" },
+      { "page": 4, "title": "बाजारभाव" },
+      { "page": 5, "title": "क्रीडा" },
+      { "page": 6, "title": "संपादकीय" }
+    ],
+    "uploadedAt": "2026-09-02T06:00:00.000Z"
+  },
+  {
+    "id": "epaper_2026-09-01_jalna_main",
+    "date": "2026-09-01",
+    "edition": "jalna_main",
+    "title": "दैनिक लोकसार्थक जालना - ०१ सप्टेंबर",
+    "type": "template",
+    "pageCount": 6,
+    "pages": [
+      { "page": 1, "title": "मुख्य पृष्ठ" },
+      { "page": 2, "title": "जालना शहर" },
+      { "page": 3, "title": "मराठवाडा" },
+      { "page": 4, "title": "बाजारभाव" },
+      { "page": 5, "title": "क्रीडा" },
+      { "page": 6, "title": "संपादकीय" }
+    ],
+    "uploadedAt": "2026-09-01T06:00:00.000Z"
+  }
+]
