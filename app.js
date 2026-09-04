@@ -562,7 +562,7 @@ async function loadEpaperForDate(date, edition = 'jalna_main') {
 }
 
 function updatePageDropdown() {
-  const select = document.getElementById('pageSelectDropdown');
+  const select = document.getElementById('pageSelect') || document.getElementById('pageSelectDropdown');
   if (!select) return;
 
   select.innerHTML = '';
@@ -597,14 +597,14 @@ async function renderPage(indexOrPageNum) {
     currentPageIndex = pageNum - 1;
   }
 
-  // Update current page display text (e.g., "पृष्ठ १ / ६")
-  const pageDisplay = document.getElementById('pageNumberDisplay');
+  // Update current page display text
+  const pageDisplay = document.getElementById('pageIndicator') || document.getElementById('pageNumberDisplay');
   if (pageDisplay) {
-    pageDisplay.innerText = `पृष्ठ ${state.currentPage} / ${state.totalPages}`;
+    pageDisplay.innerText = `${state.currentPage} / ${state.totalPages}`;
   }
 
   // Update dropdown selection
-  const select = document.getElementById('pageSelectDropdown');
+  const select = document.getElementById('pageSelect') || document.getElementById('pageSelectDropdown');
   if (select && select.value != state.currentPage) {
     select.value = state.currentPage;
   }
@@ -921,11 +921,11 @@ function updateHotspots(stories) {
 
 // Update Active Page UI Controls
 function updatePageUI(pageNumber) {
-  const select = document.getElementById('pageSelectDropdown');
+  const select = document.getElementById('pageSelect') || document.getElementById('pageSelectDropdown');
   if (select) select.value = pageNumber;
 
-  const currentLabel = document.getElementById('pageNumberDisplay');
-  if (currentLabel) currentLabel.innerText = `पृष्ठ ${pageNumber} / ${state.totalPages}`;
+  const currentLabel = document.getElementById('pageIndicator') || document.getElementById('pageNumberDisplay');
+  if (currentLabel) currentLabel.innerText = `${pageNumber} / ${state.totalPages}`;
 
   // Update thumbnail highlights
   document.querySelectorAll('.thumb-item').forEach(item => {
@@ -965,7 +965,7 @@ function initClientFileUpload() {
       state.totalPages = uploadedPages.length;
 
       // Update dropdown options
-      const select = document.getElementById('pageSelectDropdown');
+      const select = document.getElementById('pageSelect') || document.getElementById('pageSelectDropdown');
       if (select) {
         select.innerHTML = '';
         for (let i = 1; i <= uploadedPages.length; i++) {
@@ -995,7 +995,7 @@ function initControls() {
   initClientFileUpload();
 
   // Page Selector Dropdown
-  const pageSelect = document.getElementById('pageSelectDropdown');
+  const pageSelect = document.getElementById('pageSelect') || document.getElementById('pageSelectDropdown');
   if (pageSelect) {
     pageSelect.addEventListener('change', (e) => {
       const targetPage = parseInt(e.target.value, 10);
@@ -1008,8 +1008,8 @@ function initControls() {
   }
 
   // Next / Prev Buttons
-  document.getElementById('btnPrevPage')?.addEventListener('click', prevPage);
-  document.getElementById('btnNextPage')?.addEventListener('click', nextPage);
+  (document.getElementById('prevPage') || document.getElementById('btnPrevPage'))?.addEventListener('click', prevPage);
+  (document.getElementById('nextPage') || document.getElementById('btnNextPage'))?.addEventListener('click', nextPage);
 
   // Zoom Controls
   document.getElementById('btnZoomIn')?.addEventListener('click', () => setZoom(state.zoomLevel + 0.2));

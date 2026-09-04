@@ -168,8 +168,8 @@
         <div class="reader-toolbar">
           <!-- Page Selector Group -->
           <div class="toolbar-group">
-            <button id="btnPrevPage" class="toolbar-btn" title="मागील पृष्ठ (Left Arrow)"><i class="fa-solid fa-chevron-left"></i></button>
-            <select id="pageSelectDropdown" class="page-dropdown-select">
+            <button id="prevPage" class="toolbar-btn" title="मागील पृष्ठ (Left Arrow)"><i class="fa-solid fa-chevron-left"></i></button>
+            <select id="pageSelect" class="page-dropdown-select">
               <option value="1">पृष्ठ १ - मुख्य पृष्ठ</option>
               <option value="2">पृष्ठ २ - जालना शहर व जिल्हा</option>
               <option value="3">पृष्ठ ३ - मराठवाडा विशेष</option>
@@ -177,8 +177,8 @@
               <option value="5">पृष्ठ ५ - क्रीडा व देश-विदेश</option>
               <option value="6">पृष्ठ ६ - संपादकीय व विचार</option>
             </select>
-            <button id="btnNextPage" class="toolbar-btn" title="पुढील पृष्ठ (Right Arrow)"><i class="fa-solid fa-chevron-right"></i></button>
-            <span id="pageNumberDisplay" class="zoom-level-text" style="font-size:0.8rem; min-width:70px;">पृष्ठ १ / ६</span>
+            <button id="nextPage" class="toolbar-btn" title="पुढील पृष्ठ (Right Arrow)"><i class="fa-solid fa-chevron-right"></i></button>
+            <span id="pageIndicator" class="zoom-level-text" style="font-size:0.8rem; min-width:70px;">1 / 6</span>
           </div>
 
           <!-- Zoom & Fit Group -->
@@ -565,7 +565,7 @@
   <!-- Application Script -->
   <script src="app.js"></script>
 
-  <!-- Exact PDF.js Rendering Engine Script for PDF E-Paper Upload -->
+  <!-- Exact PDF.js Rendering Engine Script with Pagination UI Wiring -->
   <script>
     // Set the worker path for PDF.js (required for it to function)
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -573,6 +573,18 @@
     let pdfDoc = null;
     let pageNum = 1; // PDF.js is 1-indexed
     const scale = 1.5; // Adjust this to change the rendering resolution/zoom
+
+    // Helper function to update pagination controls & indicator text
+    function updatePaginationUI() {
+        const pageSelect = document.getElementById('pageSelect');
+        if (pageSelect) {
+            pageSelect.value = pageNum;
+        }
+        const pageIndicator = document.getElementById('pageIndicator');
+        if (pageIndicator && pdfDoc) {
+            pageIndicator.innerText = `${pageNum} / ${pdfDoc.numPages}`;
+        }
+    }
 
     // 1. Listen for the PDF file upload
     document.getElementById('pdfUpload').addEventListener('change', function(event) {
@@ -591,6 +603,26 @@
             pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
                 pdfDoc = pdf;
                 pageNum = 1; // Reset to page 1 on new upload
+
+                // Clear and populate #pageSelect dropdown dynamically
+                const pageSelect = document.getElementById('pageSelect');
+                if (pageSelect) {
+                    pageSelect.innerHTML = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const opt = document.createElement('option');
+                        opt.value = i;
+                        opt.innerText = `पृष्ठ ${i}`;
+                        pageSelect.appendChild(opt);
+                    }
+                    pageSelect.value = 1;
+                }
+
+                // Update #pageIndicator text
+                const pageIndicator = document.getElementById('pageIndicator');
+                if (pageIndicator) {
+                    pageIndicator.innerText = `1 / ${pdf.numPages}`;
+                }
+
                 renderPage(pageNum);
             }).catch(function(error) {
                 console.error('Error loading PDF:', error);
@@ -628,18 +660,30 @@
         });
     }
 
-    // 3. Navigation Controls (Optional - connect these to your UI buttons)
-    function onPrevPage() {
-        if (pageNum <= 1) return;
+    // 3. Navigation Controls Event Listeners
+    // Previous Button (<) Listener
+    document.getElementById('prevPage')?.addEventListener('click', function() {
+        if (!pdfDoc || pageNum <= 1) return;
         pageNum--;
         renderPage(pageNum);
-    }
+        updatePaginationUI();
+    });
 
-    function onNextPage() {
-        if (pageNum >= pdfDoc.numPages) return;
+    // Next Button (>) Listener
+    document.getElementById('nextPage')?.addEventListener('click', function() {
+        if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
         pageNum++;
         renderPage(pageNum);
-    }
+        updatePaginationUI();
+    });
+
+    // Dropdown Change Listener
+    document.getElementById('pageSelect')?.addEventListener('change', function() {
+        if (!pdfDoc) return;
+        pageNum = parseInt(this.value, 10);
+        renderPage(pageNum);
+        updatePaginationUI();
+    });
   </script>
 </body>
 </html>

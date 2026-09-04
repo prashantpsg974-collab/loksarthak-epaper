@@ -3,18 +3,38 @@
     "id": "epaper_2026-09-04_jalna_main",
     "date": "2026-09-04",
     "edition": "jalna_main",
-    "title": "दैनिक लोकसार्थक जालना मुख्य अंक",
-    "type": "template",
+    "title": "दैनिक लोकसार्थक जालना - 2026-09-04",
+    "uploadedAt": "2026-09-04T13:00:40.322Z",
+    "type": "pdf",
+    "fileUrl": "/uploads/1788526840314_345938.pdf",
+    "originalName": "Loksarthak 31-08-2026.pdf",
     "pageCount": 6,
     "pages": [
-      { "page": 1, "title": "मुख्य पृष्ठ - जालना ठळक घडामोडी" },
-      { "page": 2, "title": "जालना शहर व क्राईम वार्ता" },
-      { "page": 3, "title": "मराठवाडा विशेष" },
-      { "page": 4, "title": "कृषी, व्यापार व बाजारभाव" },
-      { "page": 5, "title": "क्रीडा व देश-विदेश" },
-      { "page": 6, "title": "संपादकीय व विचारमंथन" }
-    ],
-    "uploadedAt": "2026-09-04T06:00:00.000Z"
+      {
+        "page": 1,
+        "title": "पृष्ठ 1"
+      },
+      {
+        "page": 2,
+        "title": "पृष्ठ 2"
+      },
+      {
+        "page": 3,
+        "title": "पृष्ठ 3"
+      },
+      {
+        "page": 4,
+        "title": "पृष्ठ 4"
+      },
+      {
+        "page": 5,
+        "title": "पृष्ठ 5"
+      },
+      {
+        "page": 6,
+        "title": "पृष्ठ 6"
+      }
+    ]
   },
   {
     "id": "epaper_2026-09-03_jalna_main",
@@ -24,12 +44,30 @@
     "type": "template",
     "pageCount": 6,
     "pages": [
-      { "page": 1, "title": "मुख्य पृष्ठ" },
-      { "page": 2, "title": "जालना शहर" },
-      { "page": 3, "title": "मराठवाडा" },
-      { "page": 4, "title": "बाजारभाव" },
-      { "page": 5, "title": "क्रीडा" },
-      { "page": 6, "title": "संपादकीय" }
+      {
+        "page": 1,
+        "title": "मुख्य पृष्ठ"
+      },
+      {
+        "page": 2,
+        "title": "जालना शहर"
+      },
+      {
+        "page": 3,
+        "title": "मराठवाडा"
+      },
+      {
+        "page": 4,
+        "title": "बाजारभाव"
+      },
+      {
+        "page": 5,
+        "title": "क्रीडा"
+      },
+      {
+        "page": 6,
+        "title": "संपादकीय"
+      }
     ],
     "uploadedAt": "2026-09-03T06:00:00.000Z"
   },
@@ -41,12 +79,30 @@
     "type": "template",
     "pageCount": 6,
     "pages": [
-      { "page": 1, "title": "मुख्य पृष्ठ" },
-      { "page": 2, "title": "जालना शहर" },
-      { "page": 3, "title": "मराठवाडा" },
-      { "page": 4, "title": "बाजारभाव" },
-      { "page": 5, "title": "क्रीडा" },
-      { "page": 6, "title": "संपादकीय" }
+      {
+        "page": 1,
+        "title": "मुख्य पृष्ठ"
+      },
+      {
+        "page": 2,
+        "title": "जालना शहर"
+      },
+      {
+        "page": 3,
+        "title": "मराठवाडा"
+      },
+      {
+        "page": 4,
+        "title": "बाजारभाव"
+      },
+      {
+        "page": 5,
+        "title": "क्रीडा"
+      },
+      {
+        "page": 6,
+        "title": "संपादकीय"
+      }
     ],
     "uploadedAt": "2026-09-02T06:00:00.000Z"
   },
@@ -58,12 +114,30 @@
     "type": "template",
     "pageCount": 6,
     "pages": [
-      { "page": 1, "title": "मुख्य पृष्ठ" },
-      { "page": 2, "title": "जालना शहर" },
-      { "page": 3, "title": "मराठवाडा" },
-      { "page": 4, "title": "बाजारभाव" },
-      { "page": 5, "title": "क्रीडा" },
-      { "page": 6, "title": "संपादकीय" }
+      {
+        "page": 1,
+        "title": "मुख्य पृष्ठ"
+      },
+      {
+        "page": 2,
+        "title": "जालना शहर"
+      },
+      {
+        "page": 3,
+        "title": "मराठवाडा"
+      },
+      {
+        "page": 4,
+        "title": "बाजारभाव"
+      },
+      {
+        "page": 5,
+        "title": "क्रीडा"
+      },
+      {
+        "page": 6,
+        "title": "संपादकीय"
+      }
     ],
     "uploadedAt": "2026-09-01T06:00:00.000Z"
   }
