@@ -235,12 +235,16 @@ app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`====================================================`);
-  console.log(`📰 Dainik Loksarthak E-Paper Server Running!`);
-  console.log(`🌐 Public Portal: http://localhost:${PORT}`);
-  console.log(`📂 Uploads API:  http://localhost:${PORT}/api/upload`);
-  console.log(`📅 Archives API: http://localhost:${PORT}/api/archives`);
-  console.log(`🤖 AI Agent API: http://localhost:${PORT}/api/chat`);
-  console.log(`====================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`====================================================`);
+    console.log(`📰 Dainik Loksarthak E-Paper Server Running!`);
+    console.log(`🌐 Public Portal: http://localhost:${PORT}`);
+    console.log(`📂 Uploads API:  http://localhost:${PORT}/api/upload`);
+    console.log(`📅 Archives API: http://localhost:${PORT}/api/archives`);
+    console.log(`🤖 AI Agent API: http://localhost:${PORT}/api/chat`);
+    console.log(`====================================================`);
+  });
+}
+
+export default app;
