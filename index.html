@@ -137,6 +137,9 @@
         </ul>
 
         <div class="nav-actions">
+          <button class="btn-archive-trigger" onclick="document.getElementById('pdfUpload').click()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; font-weight: 600;">
+            <i class="fa-solid fa-cloud-arrow-up"></i> <span>ई-पेपर अपलोड (Upload)</span>
+          </button>
           <button id="btnOpenArchiveModal" class="btn-archive-trigger">
             <i class="fa-solid fa-calendar-days"></i> <span>मागील अंक (Archives)</span>
           </button>
@@ -195,15 +198,14 @@
             <button id="btnCropTool" class="toolbar-btn highlight" title="कात्रण / क्लिप करा व शेअर करा">
               <i class="fa-solid fa-scissors"></i> <span>क्लिप करा ✂️</span>
             </button>
-            <!-- Hidden input that only accepts PDFs -->
+            <!-- Hidden inputs for direct PDF and image upload -->
             <input type="file" id="pdfUpload" accept="application/pdf" style="display: none;">
-            <!-- Visible button to trigger the input -->
-            <button onclick="document.getElementById('pdfUpload').click()" style="padding: 6px 12px; background: #2b6cb0; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-              Upload PDF E-Paper
+            <button onclick="document.getElementById('pdfUpload').click()" class="toolbar-btn" style="background: #2563eb; color: #fff; font-weight: 600;" title="PDF ई-पेपर अपलोड करा">
+              <i class="fa-solid fa-file-pdf"></i> <span>PDF अपलोड</span>
             </button>
             <input type="file" id="paperUpload" accept="image/jpeg, image/png" multiple style="display: none;">
-            <button onclick="document.getElementById('paperUpload').click()" style="padding: 6px 12px; background: #ff4742; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">
-              अंक अपलोड करा (Upload Pages)
+            <button onclick="document.getElementById('paperUpload').click()" class="toolbar-btn" style="background: #e11d48; color: #fff; font-weight: 600;" title="इमेजेस अपलोड करा">
+              <i class="fa-solid fa-file-image"></i> <span>इमेज अपलोड</span>
             </button>
             <button id="btnDownloadPage" class="toolbar-btn" title="हे पृष्ठ डाउनलोड करा">
               <i class="fa-solid fa-download"></i> <span>डाउनलोड</span>
@@ -548,7 +550,7 @@
             <li><a href="#videoNews">व्हिडीओ बातम्या (TV)</a></li>
             <li><a href="https://chat.whatsapp.com/" target="_blank">व्हॉट्सॲप चॅनेल</a></li>
             <li><a href="javascript:void(0)" onclick="toggleCropTool()">कात्रण / क्लिपिंग टूल</a></li>
-            <li><a href="./admin.html" style="color:var(--primary); font-weight:700;"><i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर अपलोड (Admin)</a></li>
+            <li><a href="javascript:void(0)" onclick="document.getElementById('pdfUpload').click()" style="color:var(--primary); font-weight:700;"><i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर अपलोड करा (Direct Upload)</a></li>
           </ul>
         </div>
       </div>

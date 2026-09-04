@@ -69,19 +69,14 @@ function saveEditionsDB(data) {
 }
 
 // --------------------------------------------------------------------------
-// 1. ADMIN UPLOAD API ROUTE (/api/upload)
+// 1. DIRECT E-PAPER UPLOAD API ROUTE (/api/upload)
 // --------------------------------------------------------------------------
 app.post('/api/upload', upload.fields([
   { name: 'pdfFile', maxCount: 1 },
   { name: 'pageImages', maxCount: 30 }
 ]), async (req, res) => {
   try {
-    const { date, edition = 'jalna_main', title, adminPasscode } = req.body;
-
-    // Optional admin security check (e.g. passcode or open in dev)
-    if (process.env.ADMIN_PASSWORD && adminPasscode !== process.env.ADMIN_PASSWORD) {
-      return res.status(401).json({ error: 'अनधिकृत प्रवेश: पासवर्ड चुकीचा आहे (Invalid Admin Passcode).' });
-    }
+    const { date, edition = 'jalna_main', title } = req.body;
 
     if (!date) {
       return res.status(400).json({ error: 'तारीख निवडणे बंधनकारक आहे (Date is required).' });
@@ -230,9 +225,9 @@ ${newsContext ? `\nToday's Marathi Newspaper Content:\n${newsContext}` : ''}`;
   }
 });
 
-// Admin Route
+// Redirect /admin to homepage
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.redirect('/');
 });
 
 // Fallback to index.html for client-side navigation
@@ -244,7 +239,6 @@ app.listen(PORT, () => {
   console.log(`====================================================`);
   console.log(`📰 Dainik Loksarthak E-Paper Server Running!`);
   console.log(`🌐 Public Portal: http://localhost:${PORT}`);
-  console.log(`🔒 Admin Panel:  http://localhost:${PORT}/admin`);
   console.log(`📂 Uploads API:  http://localhost:${PORT}/api/upload`);
   console.log(`📅 Archives API: http://localhost:${PORT}/api/archives`);
   console.log(`🤖 AI Agent API: http://localhost:${PORT}/api/chat`);
