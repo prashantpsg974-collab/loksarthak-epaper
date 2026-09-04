@@ -1,7 +1,6 @@
-/**
- * DAINIK LOKSARTHAK JALNA - MODERN MARATHI E-PAPER APPLICATION
- * Core Engine & Interactive Controls
- */
+// State Management for Client Uploads & Viewer
+let uploadedPages = [];
+let currentPageIndex = 0;
 
 // URL query parameters
 const urlParams = new URLSearchParams(window.location.search);
@@ -578,23 +577,69 @@ function updatePageDropdown() {
   }
 }
 
-async function renderPage(pageNumber) {
-  state.currentPage = pageNumber;
-  updatePageUI(pageNumber);
+async function renderPage(indexOrPageNum) {
+  let index = 0;
+  if (uploadedPages.length > 0) {
+    if (typeof indexOrPageNum === 'number') {
+      if (indexOrPageNum < 0) index = 0;
+      else if (indexOrPageNum >= uploadedPages.length) index = uploadedPages.length - 1;
+      else index = indexOrPageNum;
+    }
+    currentPageIndex = index;
+    state.currentPage = index + 1;
+    state.totalPages = uploadedPages.length;
+  } else {
+    // Normal page number (1-based)
+    let pageNum = (typeof indexOrPageNum === 'number') ? indexOrPageNum : 1;
+    if (pageNum < 1) pageNum = 1;
+    if (pageNum > state.totalPages) pageNum = state.totalPages;
+    state.currentPage = pageNum;
+    currentPageIndex = pageNum - 1;
+  }
+
+  // Update current page display text (e.g., "पृष्ठ १ / ६")
+  const pageDisplay = document.getElementById('pageNumberDisplay');
+  if (pageDisplay) {
+    pageDisplay.innerText = `पृष्ठ ${state.currentPage} / ${state.totalPages}`;
+  }
+
+  // Update dropdown selection
+  const select = document.getElementById('pageSelectDropdown');
+  if (select && select.value != state.currentPage) {
+    select.value = state.currentPage;
+  }
+  updateSidebarActiveThumbnail(state.currentPage);
 
   const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
 
-  // 1. If PDF Document is loaded, render page with pdf.js
+  // 1. Client-Side Uploaded Image Pages
+  if (uploadedPages.length > 0 && uploadedPages[currentPageIndex]) {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      canvas.width = img.naturalWidth || 900;
+      canvas.height = img.naturalHeight || 1350;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = uploadedPages[currentPageIndex];
+
+    const hotspotLayer = document.getElementById('hotspotLayer');
+    if (hotspotLayer) hotspotLayer.innerHTML = '';
+    return;
+  }
+
+  // 2. If PDF Document is loaded, render page with pdf.js
   if (state.pdfDoc) {
     try {
-      const page = await state.pdfDoc.getPage(pageNumber);
+      const page = await state.pdfDoc.getPage(state.currentPage);
       const viewport = page.getViewport({ scale: 1.5 });
       canvas.width = viewport.width;
       canvas.height = viewport.height;
-      
-      // Clear hotspot layer for PDF
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       const hotspotLayer = document.getElementById('hotspotLayer');
       if (hotspotLayer) hotspotLayer.innerHTML = '';
 
@@ -609,22 +654,23 @@ async function renderPage(pageNumber) {
     }
   }
 
-  // 2. If uploaded image pages are loaded
-  if (state.loadedEpaperData?.type === 'images' && state.loadedEpaperData.pages?.[pageNumber - 1]?.imageUrl) {
-    const imgUrl = state.loadedEpaperData.pages[pageNumber - 1].imageUrl;
+  // 3. If uploaded image pages are loaded from server
+  if (state.loadedEpaperData?.type === 'images' && state.loadedEpaperData.pages?.[state.currentPage - 1]?.imageUrl) {
+    const imgUrl = state.loadedEpaperData.pages[state.currentPage - 1].imageUrl;
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
       canvas.width = img.naturalWidth || 900;
       canvas.height = img.naturalHeight || 1350;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     };
     img.src = imgUrl;
     return;
   }
 
-  // 3. Fallback: High-Res Interactive Vector Marathi Layout
-  renderVectorNewspaperPage(pageNumber);
+  // 4. Fallback: High-Res Interactive Vector Marathi Layout
+  renderVectorNewspaperPage(state.currentPage);
 }
 
 function renderVectorNewspaperPage(pageNumber) {
@@ -892,13 +938,72 @@ function updatePageUI(pageNumber) {
   });
 }
 
-// Controls Setup (Navigation, Zoom, Scissors Crop, Fullscreen)
+// Client-Side File Upload Handler for #paperUpload
+function initClientFileUpload() {
+  const paperUpload = document.getElementById('paperUpload');
+  if (!paperUpload) return;
+
+  paperUpload.addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+
+    uploadedPages = [];
+    currentPageIndex = 0;
+
+    const readPromises = files.map((file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = (error) => reject(error);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    try {
+      showToast('इमेजेस प्रोसेस होत आहेत...');
+      uploadedPages = await Promise.all(readPromises);
+      state.totalPages = uploadedPages.length;
+
+      // Update dropdown options
+      const select = document.getElementById('pageSelectDropdown');
+      if (select) {
+        select.innerHTML = '';
+        for (let i = 1; i <= uploadedPages.length; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.innerText = `पृष्ठ ${i}`;
+          select.appendChild(opt);
+        }
+      }
+
+      // Update sidebar thumbnails
+      initSidebarThumbnails();
+
+      // Automatically render the first page
+      renderPage(0);
+      showToast(`🎉 ${uploadedPages.length} पाने यशस्वीरित्या लोड झाली!`);
+    } catch (err) {
+      console.error('Error reading uploaded files:', err);
+      alert('इमेजेस लोड करताना त्रुटी आली: ' + err.message);
+    }
+  });
+}
+
+// Controls Setup (Navigation, Zoom, Scissors Crop, Fullscreen, Upload)
 function initControls() {
+  // Initialize Client-Side File Upload
+  initClientFileUpload();
+
   // Page Selector Dropdown
   const pageSelect = document.getElementById('pageSelectDropdown');
   if (pageSelect) {
     pageSelect.addEventListener('change', (e) => {
-      goToPage(parseInt(e.target.value, 10));
+      const targetPage = parseInt(e.target.value, 10);
+      if (uploadedPages.length > 0) {
+        renderPage(targetPage - 1);
+      } else {
+        goToPage(targetPage);
+      }
     });
   }
 
@@ -939,24 +1044,46 @@ function initControls() {
 }
 
 function goToPage(pageNumber) {
-  if (pageNumber < 1 || pageNumber > state.totalPages) return;
-  renderPage(pageNumber);
+  if (uploadedPages.length > 0) {
+    renderPage(pageNumber - 1);
+  } else {
+    if (pageNumber < 1 || pageNumber > state.totalPages) return;
+    renderPage(pageNumber);
+  }
   window.scrollTo({ top: 180, behavior: 'smooth' });
 }
 
 function prevPage() {
-  if (state.currentPage > 1) {
-    goToPage(state.currentPage - 1);
+  if (uploadedPages.length > 0) {
+    if (currentPageIndex > 0) {
+      currentPageIndex--;
+      renderPage(currentPageIndex);
+    } else {
+      showToast('हे पहिले पृष्ठ आहे!');
+    }
   } else {
-    showToast('हे पहिले पृष्ठ आहे!');
+    if (state.currentPage > 1) {
+      goToPage(state.currentPage - 1);
+    } else {
+      showToast('हे पहिले पृष्ठ आहे!');
+    }
   }
 }
 
 function nextPage() {
-  if (state.currentPage < state.totalPages) {
-    goToPage(state.currentPage + 1);
+  if (uploadedPages.length > 0) {
+    if (currentPageIndex < uploadedPages.length - 1) {
+      currentPageIndex++;
+      renderPage(currentPageIndex);
+    } else {
+      showToast('हे शेवटचे पृष्ठ आहे!');
+    }
   } else {
-    showToast('हे शेवटचे पृष्ठ आहे!');
+    if (state.currentPage < state.totalPages) {
+      goToPage(state.currentPage + 1);
+    } else {
+      showToast('हे शेवटचे पृष्ठ आहे!');
+    }
   }
 }
 

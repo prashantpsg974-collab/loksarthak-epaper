@@ -187,10 +187,14 @@
             <button id="btnZoomFit" class="toolbar-btn" title="स्क्रीननुसार ॲडजस्ट करा"><i class="fa-solid fa-expand"></i> फिट</button>
           </div>
 
-          <!-- Tools Group (Clip, Download, Fullscreen, Share) -->
+          <!-- Tools Group (Clip, Upload, Download, Fullscreen) -->
           <div class="toolbar-group">
             <button id="btnCropTool" class="toolbar-btn highlight" title="कात्रण / क्लिप करा व शेअर करा">
               <i class="fa-solid fa-scissors"></i> <span>क्लिप करा ✂️</span>
+            </button>
+            <input type="file" id="paperUpload" accept="image/jpeg, image/png" multiple style="display: none;" />
+            <button id="btnUploadPaper" class="toolbar-btn highlight" onclick="document.getElementById('paperUpload').click()" title="ई-पेपर अंक अपलोड करा">
+              <i class="fa-solid fa-cloud-arrow-up"></i> <span>अंक अपलोड करा (Upload)</span>
             </button>
             <button id="btnDownloadPage" class="toolbar-btn" title="हे पृष्ठ डाउनलोड करा">
               <i class="fa-solid fa-download"></i> <span>डाउनलोड</span>
