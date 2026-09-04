@@ -14,6 +14,7 @@
   "homepage": "https://github.com/prashantpsg974-collab/loksarthak-epaper#readme",
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.49",
+    "@ai-sdk/openai": "^4.0.58",
     "ai": "^7.0.92",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
