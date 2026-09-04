@@ -1159,31 +1159,32 @@ function setZoom(level) {
 }
 
 function fitToWidth() {
-  fitFullPaper();
+  const viewport = document.getElementById('paperCanvasViewport');
+  const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
+  if (!viewport || !canvas) return;
+
+  const canvasWidth = canvas.clientWidth || canvas.width || 800;
+  const availWidth = Math.max(300, viewport.clientWidth - 40);
+  const fitScale = Math.min(1.0, availWidth / canvasWidth);
+  setZoom(Math.max(0.65, fitScale));
+  viewport.scrollLeft = 0;
+  showToast('↔ पृष्ठ रुंदीनुसार ॲडजस्ट केले!');
 }
 
 function fitFullPaper() {
   const viewport = document.getElementById('paperCanvasViewport');
   const canvas = document.getElementById('epaperCanvas') || document.getElementById('newspaperCanvas');
-  const container = document.getElementById('paperPageContainer');
   if (!viewport || !canvas) return;
 
-  const canvasWidth = canvas.width || 800;
-  const canvasHeight = canvas.height || 1200;
-  const availWidth = Math.max(300, viewport.clientWidth - 30);
-  const availHeight = Math.max(400, window.innerHeight - 220);
-
+  const canvasWidth = canvas.clientWidth || canvas.width || 800;
+  const availWidth = Math.max(300, viewport.clientWidth - 40);
   const scaleW = availWidth / canvasWidth;
-  const scaleH = availHeight / canvasHeight;
-  const fitScale = Math.min(scaleW, scaleH, 1.0);
+  const fitScale = Math.min(1.0, scaleW);
 
-  setZoom(fitScale);
-  if (container) {
-    container.style.transformOrigin = 'top center';
-  }
+  setZoom(Math.max(0.65, fitScale));
   viewport.scrollLeft = 0;
   viewport.scrollTop = 0;
-  showToast('🔍 संपूर्ण पेपर स्क्रीनवर फिट केला (Full Paper Visible)!');
+  showToast('🔍 संपूर्ण पेपर स्क्रीनवर योग्य आकारात फिट केला (Full Paper View)!');
 }
 
 function toggleFullscreen() {

@@ -594,7 +594,7 @@
 
     let pdfDoc = null;
     let pageNum = 1; // PDF.js is 1-indexed
-    const scale = 1.5; // Adjust this to change the rendering resolution/zoom
+    const scale = 1.8; // High-resolution rendering for sharp newspaper reading
 
     // Helper function to update quick page pill buttons
     function updateQuickPagePillsUI(total, current) {
@@ -637,37 +637,54 @@
         }
     }
 
+    // Function to set zoom level cleanly
+    function setEpaperZoom(zoomVal) {
+        const container = document.getElementById('paperPageContainer');
+        const zoomText = document.getElementById('zoomLevelText');
+        const clampedZoom = Math.max(0.4, Math.min(2.5, zoomVal));
+        if (container) {
+            container.style.transform = `scale(${clampedZoom})`;
+            container.style.transformOrigin = 'top center';
+        }
+        if (zoomText) {
+            zoomText.innerText = `${Math.round(clampedZoom * 100)}%`;
+        }
+        if (typeof state !== 'undefined') {
+            state.zoomLevel = clampedZoom;
+        }
+    }
+    window.setZoom = setEpaperZoom;
+
+    // Function to fit paper width comfortably
+    function fitToWidth() {
+        const viewport = document.getElementById('paperCanvasViewport');
+        const canvas = document.getElementById('epaperCanvas');
+        if (!viewport || !canvas) return;
+
+        const canvasWidth = canvas.clientWidth || canvas.width || 800;
+        const availWidth = Math.max(300, viewport.clientWidth - 40);
+        const fitScale = Math.min(1.0, availWidth / canvasWidth);
+        setEpaperZoom(fitScale);
+        viewport.scrollLeft = 0;
+    }
+    window.fitToWidth = fitToWidth;
+
     // Function to make full paper visible on screen
     function fitFullPaper() {
         const viewport = document.getElementById('paperCanvasViewport');
         const canvas = document.getElementById('epaperCanvas');
-        const container = document.getElementById('paperPageContainer');
         if (!viewport || !canvas) return;
 
-        const canvasWidth = canvas.width || 800;
-        const canvasHeight = canvas.height || 1200;
-        const availWidth = Math.max(300, viewport.clientWidth - 30);
-        const availHeight = Math.max(400, window.innerHeight - 220);
-
+        const canvasWidth = canvas.clientWidth || canvas.width || 800;
+        const availWidth = Math.max(300, viewport.clientWidth - 40);
         const scaleW = availWidth / canvasWidth;
-        const scaleH = availHeight / canvasHeight;
-        const fitScale = Math.min(scaleW, scaleH, 1.0);
+        const fitScale = Math.min(1.0, scaleW);
 
-        if (container) {
-            container.style.transform = `scale(${fitScale})`;
-            container.style.transformOrigin = 'top center';
-        }
-        const zoomText = document.getElementById('zoomLevelText');
-        if (zoomText) {
-            zoomText.innerText = `${Math.round(fitScale * 100)}%`;
-        }
-        if (typeof state !== 'undefined') {
-            state.zoomLevel = fitScale;
-        }
+        setEpaperZoom(Math.max(0.65, fitScale));
         viewport.scrollLeft = 0;
         viewport.scrollTop = 0;
         if (typeof showToast === 'function') {
-            showToast('🔍 संपूर्ण पेपर स्क्रीनवर फिट केला!');
+            showToast('🔍 संपूर्ण पेपर स्क्रीनवर योग्य आकारात फिट केला!');
         }
     }
     window.fitFullPaper = fitFullPaper;
@@ -717,6 +734,8 @@
                 }
 
                 updateQuickPagePillsUI(pdf.numPages, 1);
+                // Set default zoom to 100% for proper readable newspaper viewing
+                setEpaperZoom(1.0);
                 renderPage(pageNum);
             }).catch(function(error) {
                 console.error('Error loading PDF:', error);
@@ -751,7 +770,11 @@
                 viewport: viewport
             };
             page.render(renderContext).promise.then(function() {
-                fitFullPaper();
+                // Ensure natural readable view
+                const container = document.getElementById('paperPageContainer');
+                if (container && (!state || !state.zoomLevel || state.zoomLevel < 0.6)) {
+                    setEpaperZoom(1.0);
+                }
             });
         });
     }
