@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>दैनिक लोकसार्थक जालना - डिजिटल ई-पेपर (Dainik Loksarthak Jalna Epaper)</title>
+  
+  <!-- SEO & Social Meta Tags -->
+  <meta name="description" content="दैनिक लोकसार्थक जालना: जालना व मराठवाड्याचे अग्रगण्य मराठी वृत्तपत्र. ताजी बातमी, राजकारण, कृषी बाजारभाव, गुन्हे वार्ता व संपादकीय." />
+  <meta name="keywords" content="Loksarthak Jalna, Dainik Loksarthak, Jalna News, Marathi Epaper Jalna, Jalna News Paper, मराठवाडा बातमी, जालना ई-पेपर" />
+  <meta property="og:title" content="दैनिक लोकसार्थक जालना - डिजिटल ई-पेपर" />
+  <meta property="og:description" content="जालना व मराठवाड्याचे अग्रगण्य मराठी वृत्तपत्र" />
+  <meta property="og:type" content="newspaper" />
+  <meta property="og:url" content="https://epaper.loksarthak.in/" />
+  
+  <!-- Favicon & PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#c81e1e" />
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- PWA Install Banner -->
+  <div id="topInstallBanner" class="top-install-banner" style="display: none;">
+    <div class="top-install-content">
+      <div class="top-install-icon">लो</div>
+      <div>
+        <strong>दैनिक लोकसार्थक ॲप</strong>
+        <span style="opacity: 0.8; font-size: 0.75rem; margin-left: 6px;">मोबाईलवर जलद वाचनासाठी इन्स्टॉल करा</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button id="btnInstallApp" class="btn-install-app"><i class="fa-solid fa-download"></i> इन्स्टॉल करा</button>
+      <button class="btn-close-banner" onclick="document.getElementById('topInstallBanner').style.display='none'">✕</button>
+    </div>
+  </div>
+
+  <!-- Top Utility Header Bar -->
+  <header class="top-bar">
+    <div class="container">
+      <div class="top-bar-inner">
+        <!-- Date, Weather & Edition -->
+        <div class="date-weather-badge">
+          <div class="badge-item"><i class="fa-regular fa-calendar-days"></i> शुक्रवार, ०४ सप्टेंबर २०२६</div>
+          <div class="badge-item"><i class="fa-solid fa-cloud-sun"></i> जालना २८°C</div>
+          <div id="currentEditionPill" class="edition-select-pill" onclick="openEditionModal()">
+            <i class="fa-solid fa-location-dot"></i> जालना मुख्य आवृत्ती <i class="fa-solid fa-chevron-down" style="font-size: 0.65rem;"></i>
+          </div>
+        </div>
+
+        <!-- Top Actions & Socials -->
+        <div class="top-actions">
+          <div class="social-links-strip">
+            <a href="https://chat.whatsapp.com/" target="_blank" class="social-icon-btn" style="background:#25d366;" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="https://facebook.com/" target="_blank" class="social-icon-btn facebook" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://twitter.com/" target="_blank" class="social-icon-btn twitter" title="Twitter / X"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://youtube.com/" target="_blank" class="social-icon-btn youtube" title="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            <a href="https://t.me/" target="_blank" class="social-icon-btn telegram" title="Telegram"><i class="fa-brands fa-telegram"></i></a>
+          </div>
+
+          <a href="https://chat.whatsapp.com/" target="_blank" class="btn-join-whatsapp">
+            <i class="fa-brands fa-whatsapp"></i> जॉईन व्हॉट्सॲप ग्रुप
+          </a>
+
+          <!-- Theme Toggle -->
+          <button id="themeToggleBtn" class="theme-toggle-btn" aria-label="Toggle Dark/Light Mode">
+            <i class="fa-solid fa-moon"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Editorial Masthead (Header) -->
+  <section class="main-header">
+    <div class="container">
+      <div class="masthead-wrapper">
+        <!-- Left Quick Info -->
+        <div class="masthead-ad">
+          <span style="font-weight: 700; color: var(--primary);">दैनिक लोकसार्थक जाहिरात</span>
+          <span>जिल्हाभरातील वाचकांपर्यंत पोहोचा</span>
+          <span style="font-size: 0.7rem; margin-top: 2px;">📞 ०२४८२-२३४५६७</span>
+        </div>
+
+        <!-- Center Brand Logo -->
+        <div class="masthead-center">
+          <a href="./index.html" class="newspaper-title-link">
+            <h1 class="newspaper-logo-title">
+              <span class="logo-symbol">लो</span>
+              <span>दैनिक लोकसार्थक</span>
+            </h1>
+          </a>
+          <div class="newspaper-tagline">॥ जालना व मराठवाड्याचे अग्रगण्य मराठी वृत्तपत्र ॥</div>
+          <div class="newspaper-meta-strip">
+            <span>संपादक: प्रशांत गायकवाड</span>
+            <span>•</span>
+            <span>वर्ष ११ वे • अंक ३०५</span>
+            <span>•</span>
+            <span>आर.एन.आय. क्र. MAHMAR/2015/64821</span>
+          </div>
+        </div>
+
+        <!-- Right Quick Info -->
+        <div class="masthead-ad">
+          <span style="font-weight: 700; color: #0284c7;">लोकसार्थक ई-पेपर डिजिटल</span>
+          <span>स्मार्टफोन व लॅपटॉपवर सुलभ वाचन</span>
+          <span style="font-size: 0.7rem; margin-top: 2px;">www.loksarthak.in</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation Bar -->
+  <nav class="main-nav">
+    <div class="container">
+      <div class="nav-inner">
+        <ul class="nav-links">
+          <li class="nav-item active"><a href="#viewer"><i class="fa-solid fa-newspaper"></i> मुख्य ई-पेपर</a></li>
+          <li class="nav-item"><a href="javascript:void(0)" onclick="goToPage(1)">मुख्य पृष्ठ</a></li>
+          <li class="nav-item"><a href="javascript:void(0)" onclick="goToPage(2)">जालना शहर</a></li>
+          <li class="nav-item"><a href="javascript:void(0)" onclick="goToPage(3)">मराठवाडा</a></li>
+          <li class="nav-item"><a href="javascript:void(0)" onclick="goToPage(4)">शेती व बाजारभाव</a></li>
+          <li class="nav-item"><a href="javascript:void(0)" onclick="goToPage(5)">क्रीडा व देश-विदेश</a></li>
+          <li class="nav-item"><a href="javascript:void(0)" onclick="goToPage(6)">संपादकीय</a></li>
+          <li class="nav-item highlight"><a href="#videoNews"><i class="fa-solid fa-play"></i> व्हिडीओ बातम्या</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <button id="btnOpenArchiveModal" class="btn-archive-trigger">
+            <i class="fa-solid fa-calendar-days"></i> <span>मागील अंक (Archives)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Live Breaking News Ticker -->
+  <section class="news-ticker-section">
+    <div class="container">
+      <div class="ticker-container">
+        <div class="ticker-badge">
+          <i class="fa-solid fa-bolt"></i> <span>ताजी बातमी</span>
+        </div>
+        <div class="ticker-track-wrapper">
+          <div id="tickerTrack" class="ticker-track"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main E-Paper Workspace -->
+  <main id="viewer" class="epaper-main-workspace">
+    <div class="container">
+
+      <!-- Sticky Top Reader Toolbar -->
+      <div class="reader-toolbar-sticky">
+        <div class="reader-toolbar">
+          <!-- Page Selector Group -->
+          <div class="toolbar-group">
+            <button id="btnPrevPage" class="toolbar-btn" title="मागील पृष्ठ (Left Arrow)"><i class="fa-solid fa-chevron-left"></i></button>
+            <select id="pageSelectDropdown" class="page-dropdown-select">
+              <option value="1">पृष्ठ १ - मुख्य पृष्ठ</option>
+              <option value="2">पृष्ठ २ - जालना शहर व जिल्हा</option>
+              <option value="3">पृष्ठ ३ - मराठवाडा विशेष</option>
+              <option value="4">पृष्ठ ४ - व्यापार व बाजारभाव</option>
+              <option value="5">पृष्ठ ५ - क्रीडा व देश-विदेश</option>
+              <option value="6">पृष्ठ ६ - संपादकीय व विचार</option>
+            </select>
+            <button id="btnNextPage" class="toolbar-btn" title="पुढील पृष्ठ (Right Arrow)"><i class="fa-solid fa-chevron-right"></i></button>
+            <span id="pageNumberDisplay" class="zoom-level-text" style="font-size:0.8rem; min-width:70px;">पृष्ठ १ / ६</span>
+          </div>
+
+          <!-- Zoom & Fit Group -->
+          <div class="toolbar-group">
+            <button id="btnZoomOut" class="toolbar-btn" title="झूम कमी करा (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            <span id="zoomLevelText" class="zoom-level-text">100%</span>
+            <button id="btnZoomIn" class="toolbar-btn" title="झूम वाढवा (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+            <button id="btnZoomReset" class="toolbar-btn" title="मूळ आकार (0)"><i class="fa-solid fa-arrows-rotate"></i> १००%</button>
+            <button id="btnZoomFit" class="toolbar-btn" title="स्क्रीननुसार ॲडजस्ट करा"><i class="fa-solid fa-expand"></i> फिट</button>
+          </div>
+
+          <!-- Tools Group (Clip, Download, Fullscreen, Share) -->
+          <div class="toolbar-group">
+            <button id="btnCropTool" class="toolbar-btn highlight" title="कात्रण / क्लिप करा व शेअर करा">
+              <i class="fa-solid fa-scissors"></i> <span>क्लिप करा ✂️</span>
+            </button>
+            <button id="btnDownloadPage" class="toolbar-btn" title="हे पृष्ठ डाउनलोड करा">
+              <i class="fa-solid fa-download"></i> <span>डाउनलोड</span>
+            </button>
+            <button id="btnFullscreen" class="toolbar-btn" title="पूर्ण स्क्रीन मोड">
+              <i class="fa-solid fa-maximize"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Reader Layout (Sidebar Thumbnails + Central Interactive Paper) -->
+      <div class="reader-grid-layout">
+        
+        <!-- Left Thumbnail Strip -->
+        <aside class="thumbnails-sidebar">
+          <div class="thumbnails-sidebar-title">
+            <span><i class="fa-solid fa-images"></i> पृष्ठ सूची</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">६ पाने</span>
+          </div>
+          <div id="thumbnailsList" class="thumbnails-list"></div>
+        </aside>
+
+        <!-- Central High-Res Newspaper Canvas Viewer -->
+        <section id="paperViewerOuter" class="paper-viewer-outer">
+          
+          <!-- Prev/Next floating buttons -->
+          <button class="page-nav-arrow prev" onclick="prevPage()" title="मागील पृष्ठ"><i class="fa-solid fa-chevron-left"></i></button>
+          <button class="page-nav-arrow next" onclick="nextPage()" title="पुढील पृष्ठ"><i class="fa-solid fa-chevron-right"></i></button>
+
+          <!-- Canvas Viewport -->
+          <div id="paperCanvasViewport" class="paper-canvas-viewport">
+            <div id="paperPageContainer" class="paper-page-container">
+              <!-- Rendered Newspaper Canvas -->
+              <canvas id="newspaperCanvas"></canvas>
+
+              <!-- Interactive Clickable Hotspots Layer -->
+              <div id="hotspotLayer" class="hotspot-layer"></div>
+
+              <!-- Interactive Crop / Snip Overlay Layer -->
+              <div id="cropOverlayLayer" class="crop-overlay-layer"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Regional Edition Cards Section -->
+      <section class="editions-section">
+        <div class="section-header-title">
+          <span><i class="fa-solid fa-layer-group" style="color:var(--primary);"></i> दैनिक लोकसार्थक - विभागीय आवृत्त्या</span>
+          <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">तुमच्या परिसराचा अंक निवडा</span>
+        </div>
+
+        <div class="editions-grid">
+          <div class="edition-card" onclick="switchEdition('jalna_main')">
+            <div class="edition-card-header">
+              <span class="edition-name">जालना मुख्य</span>
+              <span class="edition-date">०४ सप्टें</span>
+            </div>
+            <div class="edition-card-thumb">
+              <canvas id="editionThumb1" width="200" height="180"></canvas>
+            </div>
+            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
+          </div>
+
+          <div class="edition-card" onclick="switchEdition('bhokardan')">
+            <div class="edition-card-header">
+              <span class="edition-name">भोकरदन - जाफ्राबाद</span>
+              <span class="edition-date">०४ सप्टें</span>
+            </div>
+            <div class="edition-card-thumb">
+              <canvas id="editionThumb2" width="200" height="180"></canvas>
+            </div>
+            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
+          </div>
+
+          <div class="edition-card" onclick="switchEdition('partur')">
+            <div class="edition-card-header">
+              <span class="edition-name">परतूर - मंठा</span>
+              <span class="edition-date">०४ सप्टें</span>
+            </div>
+            <div class="edition-card-thumb">
+              <canvas id="editionThumb3" width="200" height="180"></canvas>
+            </div>
+            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
+          </div>
+
+          <div class="edition-card" onclick="switchEdition('ambad')">
+            <div class="edition-card-header">
+              <span class="edition-name">अंबड - घनसावंगी</span>
+              <span class="edition-date">०४ सप्टें</span>
+            </div>
+            <div class="edition-card-thumb">
+              <canvas id="editionThumb4" width="200" height="180"></canvas>
+            </div>
+            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
+          </div>
+
+          <div class="edition-card" onclick="switchEdition('marathwada')">
+            <div class="edition-card-header">
+              <span class="edition-name">मराठवाडा एक्सप्रेस</span>
+              <span class="edition-date">०४ सप्टें</span>
+            </div>
+            <div class="edition-card-thumb">
+              <canvas id="editionThumb5" width="200" height="180"></canvas>
+            </div>
+            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Video News Gallery Section -->
+      <section id="videoNews" class="video-news-section">
+        <div class="section-header-title">
+          <span><i class="fa-solid fa-video" style="color:var(--youtube);"></i> लोकसार्थक टीव्ही - ताज्या व्हिडीओ बातम्या</span>
+          <a href="https://youtube.com/" target="_blank" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">
+            सर्व व्हिडीओ पहा <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+
+        <div class="video-grid">
+          <!-- Main Player -->
+          <div class="main-video-column">
+            <div class="main-video-player-box">
+              <iframe id="mainVideoIframe" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Loksarthak TV" allowfullscreen></iframe>
+            </div>
+            <h3 id="mainVideoTitle" style="font-size: 1.15rem; font-weight: 700; margin-top: 12px;">
+              जालना शहर विकास विशेष: समृद्धी द्रुतगती जोड प्रकल्पामुळे काय बदलणार?
+            </h3>
+          </div>
+
+          <!-- Video Playlist -->
+          <div id="videoPlaylistColumn" class="video-playlist-column"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       MODAL DIALOGS
+       ========================================================================= -->
+
+  <!-- 1. Article Reader Detail Modal -->
+  <div id="articleModal" class="modal-overlay">
+    <div class="modal-dialog-box">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-newspaper"></i> बातमी वाचन कक्ष</div>
+        <button class="modal-close-btn" onclick="closeAllModals()"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <img id="modalArticleClipImg" class="article-clip-preview-img" alt="बातमी कात्रण" />
+        <div id="modalArticleCategory" style="color: var(--primary); font-weight: 700; font-size: 0.85rem; margin-bottom: 6px;"></div>
+        <h2 id="modalArticleHeadline" class="article-headline"></h2>
+        
+        <div class="article-meta-tags">
+          <span id="modalArticleAuthor"></span>
+          <span>•</span>
+          <span id="modalArticleDate"></span>
+        </div>
+
+        <!-- Audio Text-to-Speech Player Bar -->
+        <div class="audio-tts-bar">
+          <div class="audio-label">
+            <i class="fa-solid fa-headphones"></i>
+            <span>मराठीत बातमी ऐका</span>
+          </div>
+          <button id="btnSpeechPlay" class="btn-audio-play">
+            <i class="fa-solid fa-volume-high"></i> बातमी ऐका
+          </button>
+        </div>
+
+        <div id="modalArticleContent" class="article-full-text"></div>
+      </div>
+      <div class="modal-footer-actions">
+        <div class="share-action-buttons">
+          <button id="btnArticleShareWa" class="share-btn whatsapp"><i class="fa-brands fa-whatsapp"></i> व्हॉट्सॲपवर पाठवा</button>
+          <button id="btnArticleShareFb" class="share-btn facebook"><i class="fa-brands fa-facebook-f"></i></button>
+          <button id="btnArticleShareTw" class="share-btn twitter"><i class="fa-brands fa-x-twitter"></i></button>
+        </div>
+        <button id="btnArticleDownloadClip" class="share-btn download">
+          <i class="fa-solid fa-download"></i> कात्रण सेव्ह करा
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Snip / Crop Share Modal -->
+  <div id="cropShareModal" class="modal-overlay">
+    <div class="modal-dialog-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-scissors"></i> बातमी कात्रण तयार झाले</div>
+        <button class="modal-close-btn" onclick="closeAllModals()"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <img id="modalCropResultImg" class="article-clip-preview-img" style="max-height: 280px;" alt="बातमी कात्रण" />
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px;">
+          तुमचे कात्रण लोकसार्थक ब्रँडिंगसह तयार झाले आहे. खालील बटनांवरून थेट व्हॉट्सॲपवर पाठवा किंवा डाऊनलोड करा.
+        </p>
+      </div>
+      <div class="modal-footer-actions" style="justify-content: center;">
+        <button id="btnCropShareWa" class="share-btn whatsapp" style="font-size: 1rem; padding: 10px 20px;">
+          <i class="fa-brands fa-whatsapp"></i> व्हॉट्सॲपवर शेअर करा
+        </button>
+        <button id="btnCropDownload" class="share-btn download" style="font-size: 1rem; padding: 10px 20px;">
+          <i class="fa-solid fa-download"></i> डाऊनलोड इमेज
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Archive Date Picker Modal -->
+  <div id="archiveModal" class="modal-overlay">
+    <div class="modal-dialog-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-calendar-days"></i> मागील अंक कॅलेंडर (Archives)</div>
+        <button class="modal-close-btn" onclick="closeAllModals()"><i class="fa-solid fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 8px; font-size: 0.95rem;">
+          सप्टेंबर २०२६ - मागील अंक निवडा:
+        </div>
+        <div id="archiveCalendarGrid" class="archive-calendar-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Action Dock -->
+  <nav class="mobile-bottom-dock">
+    <button class="dock-item active" onclick="window.scrollTo({top: 150, behavior:'smooth'})">
+      <i class="fa-solid fa-newspaper"></i>
+      <span>ई-पेपर</span>
+    </button>
+    <button class="dock-item" onclick="toggleCropTool()">
+      <i class="fa-solid fa-scissors"></i>
+      <span>कात्रण</span>
+    </button>
+    <button class="dock-item" onclick="document.getElementById('archiveModal').classList.add('active')">
+      <i class="fa-solid fa-calendar-days"></i>
+      <span>मागील अंक</span>
+    </button>
+    <button class="dock-item" onclick="downloadCurrentPage()">
+      <i class="fa-solid fa-download"></i>
+      <span>डाउनलोड</span>
+    </button>
+    <button class="dock-item" onclick="window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(window.location.href), '_blank')">
+      <i class="fa-brands fa-whatsapp" style="color:var(--whatsapp);"></i>
+      <span>शेअर</span>
+    </button>
+  </nav>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <!-- Brand Info -->
+        <div>
+          <h3 class="footer-brand-title">दैनिक लोकसार्थक</h3>
+          <p style="margin-bottom: 12px; line-height: 1.6;">
+            जालना व मराठवाड्याचे विश्वासार्ह मराठी वृत्तपत्र. निष्पक्ष पत्रकारिता, लोकहिताचे प्रश्न आणि जलद बातम्यांचे हक्काचे व्यासपीठ.
+          </p>
+          <div style="font-size: 0.8rem; opacity: 0.8;">
+            <div>मुद्रक व प्रकाशक: प्रशांत गायकवाड</div>
+            <div>कार्यालय: लोकसार्थक भवन, रेल्वे स्टेशन रोड, जालना - ४३१२०३</div>
+            <div>ईमेल: editor@loksarthak.in | फोन: ०२४८२-२३४५६७</div>
+          </div>
+        </div>
+
+        <!-- Regional Editions -->
+        <div>
+          <h4 class="footer-col-title">विभागीय आवृत्त्या</h4>
+          <ul class="footer-links-list">
+            <li><a href="javascript:void(0)" onclick="switchEdition('jalna_main')">जालना मुख्य आवृत्ती</a></li>
+            <li><a href="javascript:void(0)" onclick="switchEdition('bhokardan')">भोकरदन - जाफ्राबाद</a></li>
+            <li><a href="javascript:void(0)" onclick="switchEdition('partur')">परतूर - मंठा</a></li>
+            <li><a href="javascript:void(0)" onclick="switchEdition('ambad')">अंबड - घनसावंगी</a></li>
+            <li><a href="javascript:void(0)" onclick="switchEdition('marathwada')">मराठवाडा विशेष</a></li>
+          </ul>
+        </div>
+
+        <!-- Sections -->
+        <div>
+          <h4 class="footer-col-title">महत्त्वाचे विभाग</h4>
+          <ul class="footer-links-list">
+            <li><a href="javascript:void(0)" onclick="goToPage(1)">ठळक घडामोडी</a></li>
+            <li><a href="javascript:void(0)" onclick="goToPage(2)">जालना शहर व क्राईम</a></li>
+            <li><a href="javascript:void(0)" onclick="goToPage(4)">कृषी व बाजारभाव</a></li>
+            <li><a href="javascript:void(0)" onclick="goToPage(5)">क्रीडा व देश-विदेश</a></li>
+            <li><a href="javascript:void(0)" onclick="goToPage(6)">संपादकीय व अग्रलेख</a></li>
+          </ul>
+        </div>
+
+        <!-- Quick Connect -->
+        <div>
+          <h4 class="footer-col-title">डिजिटल सेवा</h4>
+          <ul class="footer-links-list">
+            <li><a href="javascript:void(0)" onclick="document.getElementById('archiveModal').classList.add('active')">मागील अंक (Archives)</a></li>
+            <li><a href="#videoNews">व्हिडीओ बातम्या (TV)</a></li>
+            <li><a href="https://chat.whatsapp.com/" target="_blank">व्हॉट्सॲप चॅनेल</a></li>
+            <li><a href="javascript:void(0)" onclick="toggleCropTool()">कात्रण / क्लिपिंग टूल</a></li>
+            <li><a href="javascript:void(0)">जाहिरात दर व संपर्क</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar">
+        <p>सर्वाधिकार सुरक्षित © २०२६ दैनिक लोकसार्थक जालना. | Registered with Registrar of Newspapers for India (RNI): MAHMAR/2015/64821</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
