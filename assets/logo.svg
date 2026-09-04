@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 85" width="420" height="85">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&amp;family=Noto+Sans+Devanagari:wght@700;800&amp;display=swap');
+      .brand-en {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-weight: 900;
+        font-size: 42px;
+        fill: #0b1325;
+        letter-spacing: -0.5px;
+      }
+      .brand-badge {
+        fill: #d32020;
+        rx: 8px;
+        ry: 8px;
+      }
+      .brand-mr {
+        font-family: 'Noto Sans Devanagari', sans-serif;
+        font-weight: 800;
+        font-size: 20px;
+        fill: #ffffff;
+        text-anchor: middle;
+        dominant-baseline: central;
+      }
+      .tagline {
+        font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 13.5px;
+        fill: #64748b;
+        letter-spacing: 0.2px;
+      }
+    </style>
+  </defs>
+
+  <!-- LOKSARTHAK English Text -->
+  <text x="2" y="44" class="brand-en">LOKSARTHAK</text>
+
+  <!-- Red Badge for लोकसार्थक -->
+  <rect x="306" y="16" width="108" height="34" class="brand-badge" />
+  <text x="360" y="33" class="brand-mr">लोकसार्थक</text>
+
+  <!-- Tagline -->
+  <text x="4" y="74" class="tagline">जिथे बातमी कधी जुनी होत नाही • Daily News &amp; E-Paper</text>
+</svg>

@@ -311,45 +311,59 @@ button {
 }
 
 .newspaper-title-link {
-  display: inline-block;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
   text-decoration: none;
 }
 
-.newspaper-logo-title {
-  font-family: var(--font-masthead);
-  font-size: 3.4rem;
-  line-height: 1.1;
-  color: var(--primary);
-  font-weight: 900;
-  letter-spacing: -0.5px;
-  text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.08);
-  margin-bottom: 2px;
+.brand-logo-container {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.logo-symbol {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
-  color: #fff;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  font-family: var(--font-heading);
-  box-shadow: 0 4px 12px rgba(200, 30, 30, 0.3);
+.brand-text-en {
+  font-family: var(--font-ui);
+  font-size: 3.4rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: #0b1325;
+  line-height: 1;
+}
+
+[data-theme="dark"] .brand-text-en {
+  color: #f8fafc;
+}
+
+.brand-badge-mr {
+  background: #d32020;
+  color: #ffffff;
+  font-family: var(--font-marathi);
+  font-weight: 800;
+  font-size: 1.5rem;
+  padding: 4px 14px;
+  border-radius: 8px;
+  line-height: 1.2;
+  box-shadow: 0 4px 12px rgba(211, 32, 32, 0.3);
+  letter-spacing: 0.5px;
 }
 
 .newspaper-tagline {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
+  color: #64748b;
+  letter-spacing: 0.3px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-theme="dark"] .newspaper-tagline {
+  color: #94a3b8;
 }
 
 .newspaper-meta-strip {
@@ -361,35 +375,20 @@ button {
   color: var(--text-muted);
   border-top: 1px dashed var(--border-color);
   padding-top: 4px;
-  margin-top: 4px;
-}
-
-.masthead-ad {
-  width: 220px;
-  background: var(--border-light);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 8px;
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 70px;
+  margin-top: 6px;
 }
 
 @media (max-width: 992px) {
-  .masthead-ad { display: none; }
-  .newspaper-logo-title { font-size: 2.5rem; }
+  .brand-text-en { font-size: 2.6rem; }
+  .brand-badge-mr { font-size: 1.2rem; padding: 3px 10px; }
 }
 
 @media (max-width: 600px) {
-  .newspaper-logo-title { font-size: 1.9rem; }
-  .logo-symbol { width: 36px; height: 36px; font-size: 1.3rem; }
+  .brand-text-en { font-size: 1.9rem; }
+  .brand-badge-mr { font-size: 0.95rem; padding: 2px 8px; }
   .newspaper-tagline { font-size: 0.8rem; }
 }
+
 
 /* --------------------------------------------------------------------------
    Navigation Bar

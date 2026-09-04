@@ -567,32 +567,56 @@ function renderPage(pageNumber) {
     ctx.lineTo(w - 25, 44);
     ctx.stroke();
 
-    // Big Masthead: दैनिक लोकसार्थक
-    ctx.fillStyle = '#c81e1e';
-    ctx.font = '900 62px Rozha One, Noto Sans Devanagari, serif';
+    // Masthead: LOKSARTHAK + Red Pill (लोकसार्थक)
+    // English 'LOKSARTHAK'
+    ctx.fillStyle = '#0b1325';
+    ctx.font = '900 56px Inter, "Segoe UI", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('दैनिक लोकसार्थक', w / 2, 102);
+    
+    // Compute positions for centered combo logo
+    const enText = 'LOKSARTHAK';
+    const enWidth = ctx.measureText(enText).width;
+    const badgeW = 125;
+    const badgeH = 38;
+    const totalW = enWidth + 16 + badgeW;
+    const startX = (w - totalW) / 2;
 
-    // Masthead Tagline & Jalna Edition Tag
-    ctx.fillStyle = '#ff6b00';
-    ctx.font = 'bold 16px Noto Sans Devanagari, sans-serif';
-    ctx.fillText('॥ जालना व मराठवाड्याचे अग्रगण्य मराठी दैनिक ॥', w / 2, 126);
-
-    // Side badge inside masthead
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 12px Noto Sans Devanagari, sans-serif';
+    // Draw English Text
     ctx.textAlign = 'left';
-    ctx.fillText('★ जालना मुख्य आवृत्ती', 25, 124);
-    ctx.textAlign = 'right';
-    ctx.fillText('www.loksarthak.in ★', w - 25, 124);
+    ctx.fillText(enText, startX, 102);
+
+    // Draw Red Badge
+    const badgeX = startX + enWidth + 16;
+    const badgeY = 68;
+    ctx.fillStyle = '#d32020';
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 8);
+      ctx.fill();
+    } else {
+      ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+    }
+
+    // Marathi Text inside badge
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 22px Noto Sans Devanagari, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('लोकसार्थक', badgeX + (badgeW / 2), badgeY + 27);
+
+    // Masthead Tagline
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 15px Noto Sans Devanagari, Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('जिथे बातमी कधी जुनी होत नाही • Daily News & E-Paper', w / 2, 128);
 
     // Header divider line
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#0b1325';
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(20, 134);
-    ctx.lineTo(w - 20, 134);
+    ctx.moveTo(20, 138);
+    ctx.lineTo(w - 20, 138);
     ctx.stroke();
+
 
   } else {
     // Inner pages header
@@ -1020,23 +1044,49 @@ window.captureAndShareCrop = function() {
   ctx.fillRect(0, 0, outCanvas.width, outCanvas.height);
 
   // Draw Masthead Header on Clip
-  ctx.fillStyle = '#c81e1e';
+  ctx.fillStyle = '#0b1325';
   ctx.fillRect(0, 0, outCanvas.width, headerHeight);
 
+  // English Text
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 22px Rozha One, Noto Sans Devanagari, serif';
+  ctx.font = '900 20px Inter, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('दैनिक लोकसार्थक', 16, 36);
+  ctx.fillText('LOKSARTHAK', 14, 34);
 
-  ctx.font = '600 12px Noto Sans Devanagari, sans-serif';
+  // Red Badge
+  ctx.fillStyle = '#d32020';
+  const clipBadgeX = 14 + ctx.measureText('LOKSARTHAK').width + 8;
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(clipBadgeX, 15, 75, 26, 6);
+    ctx.fill();
+  } else {
+    ctx.fillRect(clipBadgeX, 15, 75, 26);
+  }
+
+  // Marathi Badge Text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 14px Noto Sans Devanagari, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('लोकसार्थक', clipBadgeX + 37.5, 33);
+
+  // Date & Link on Right
+  ctx.font = '600 11px Noto Sans Devanagari, sans-serif';
+  ctx.fillStyle = '#94a3b8';
   ctx.textAlign = 'right';
-  ctx.fillText('जालना • ०४ सप्टेंबर २०२६ | epaper.loksarthak.in', outCanvas.width - 16, 36);
+  ctx.fillText('जालना • ०४ सप्टें २०२६ | loksarthak.in', outCanvas.width - 14, 34);
+
+  // Tagline below header
+  ctx.font = '500 9px Noto Sans Devanagari, sans-serif';
+  ctx.fillStyle = '#cbd5e1';
+  ctx.textAlign = 'left';
+  ctx.fillText('जिथे बातमी कधी जुनी होत नाही • Daily News & E-Paper', 14, 52);
 
   // Draw Cropped Image Content
   ctx.drawImage(originalCanvas, sx, sy, sw, sh, 0, headerHeight, sw, sh);
 
   // Border around clip
-  ctx.strokeStyle = '#c81e1e';
+  ctx.strokeStyle = '#d32020';
   ctx.lineWidth = 2;
   ctx.strokeRect(0, 0, outCanvas.width, outCanvas.height);
 
@@ -1099,13 +1149,29 @@ function generateStoryClipImage(story) {
   clipCanvas.height = sh + headerHeight;
 
   const ctx = clipCanvas.getContext('2d');
-  ctx.fillStyle = '#c81e1e';
+  ctx.fillStyle = '#0b1325';
   ctx.fillRect(0, 0, clipCanvas.width, headerHeight);
 
+  // Draw combo logo
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 20px Rozha One, Noto Sans Devanagari, serif';
+  ctx.font = '900 18px Inter, sans-serif';
   ctx.textAlign = 'left';
-  ctx.fillText('दैनिक लोकसार्थक जालना', 12, 32);
+  ctx.fillText('LOKSARTHAK', 12, 32);
+
+  ctx.fillStyle = '#d32020';
+  const badgeX = 12 + ctx.measureText('LOKSARTHAK').width + 8;
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(badgeX, 14, 68, 24, 6);
+    ctx.fill();
+  } else {
+    ctx.fillRect(badgeX, 14, 68, 24);
+  }
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '800 13px Noto Sans Devanagari, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('लोकसार्थक', badgeX + 34, 31);
 
   ctx.drawImage(originalCanvas, sx, sy, sw, sh, 0, headerHeight, sw, sh);
 
@@ -1116,6 +1182,7 @@ function generateStoryClipImage(story) {
     downloadImage(clipUrl, `Loksarthak_Jalna_Clip_${Date.now()}.jpg`);
   };
 }
+
 
 // Speech Synthesis for Marathi Audio Read-out
 function toggleSpeechSynthesis(text) {
