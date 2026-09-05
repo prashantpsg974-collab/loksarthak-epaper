@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="headerGrad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#c81e1e" />
+      <stop offset="100%" stop-color="#991414" />
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <!-- Masthead -->
+  <rect x="0" y="0" width="300" height="65" fill="url(#headerGrad1)" />
+  <text x="150" y="38" font-family="'Noto Sans Devanagari', 'Rozha One', serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">दैनिक लोकसार्थक</text>
+  <text x="150" y="54" font-family="'Noto Sans Devanagari', sans-serif" font-size="10" font-weight="600" fill="#fef08a" text-anchor="middle">जालना मुख्य आवृत्ती • वर्ष ११ वे</text>
+  <!-- Date strip -->
+  <rect x="0" y="65" width="300" height="18" fill="#f1f5f9" />
+  <text x="15" y="78" font-family="sans-serif" font-size="9" fill="#475569">जालना • ०४ सप्टेंबर २०२६</text>
+  <text x="285" y="78" font-family="sans-serif" font-size="9" fill="#c81e1e" font-weight="bold" text-anchor="end">किंमत ₹ ५.००</text>
+  <!-- Lead Headline -->
+  <rect x="15" y="93" width="270" height="30" fill="#fef2f2" rx="3"/>
+  <text x="22" y="113" font-family="'Noto Sans Devanagari', sans-serif" font-size="13" font-weight="800" fill="#991414">जालना शहर विकास विशेष: समृद्धी जोड प्रकल्प</text>
+  <!-- News layout columns & photo -->
+  <rect x="15" y="132" width="130" height="95" fill="#38bdf8" rx="3"/>
+  <text x="80" y="185" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold" text-anchor="middle">📷 विशेष छायाचित्र</text>
+  <!-- Text lines column 1 -->
+  <rect x="155" y="132" width="130" height="12" fill="#1e293b" rx="2"/>
+  <rect x="155" y="150" width="130" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="161" width="120" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="172" width="125" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="183" width="115" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="194" width="130" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="205" width="110" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="216" width="125" height="6" fill="#94a3b8" rx="1"/>
+  <!-- Sub Headline 2 -->
+  <line x1="15" y1="237" x2="285" y2="237" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="15" y="255" font-family="'Noto Sans Devanagari', sans-serif" font-size="12" font-weight="700" fill="#0f172a">कृषी बाजार: सोयाबीन व कापूस दरात मोठी सुधारणा</text>
+  <!-- Columns 3 & 4 -->
+  <rect x="15" y="268" width="85" height="7" fill="#64748b" rx="1"/>
+  <rect x="15" y="280" width="80" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="15" y="292" width="85" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="15" y="304" width="75" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="110" y="268" width="85" height="7" fill="#64748b" rx="1"/>
+  <rect x="110" y="280" width="85" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="110" y="292" width="75" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="110" y="304" width="80" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="205" y="268" width="80" height="43" fill="#f8fafc" stroke="#e2e8f0" rx="3"/>
+  <text x="245" y="293" font-family="sans-serif" font-size="9" fill="#0284c7" font-weight="bold" text-anchor="middle">जाहिरात</text>
+  <!-- Bottom bar -->
+  <rect x="15" y="325" width="270" height="65" fill="#fef3c7" stroke="#fcd34d" rx="4"/>
+  <text x="150" y="348" font-family="'Noto Sans Devanagari', sans-serif" font-size="11" font-weight="800" fill="#92400e" text-anchor="middle">🎯 दैनिक लोकसार्थक ई-पेपर वाचकांसाठी खास</text>
+  <text x="150" y="368" font-family="'Noto Sans Devanagari', sans-serif" font-size="10" fill="#b45309" text-anchor="middle">ताज्या घडामोडींसाठी www.loksarthak.in ला भेट द्या</text>
+</svg>

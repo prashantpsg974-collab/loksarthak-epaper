@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400" width="300" height="400">
+  <defs>
+    <linearGradient id="headerGrad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e40af" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+  </defs>
+  <rect width="300" height="400" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="0" y="0" width="300" height="65" fill="url(#headerGrad2)" />
+  <text x="150" y="38" font-family="'Noto Sans Devanagari', 'Rozha One', serif" font-size="22" font-weight="900" fill="#ffffff" text-anchor="middle">दैनिक लोकसार्थक</text>
+  <text x="150" y="54" font-family="'Noto Sans Devanagari', sans-serif" font-size="10" font-weight="600" fill="#bfdbfe" text-anchor="middle">भोकरदन - जाफ्राबाद विशेष आवृत्ती</text>
+  <rect x="0" y="65" width="300" height="18" fill="#f1f5f9" />
+  <text x="15" y="78" font-family="sans-serif" font-size="9" fill="#475569">भोकरदन • ०४ सप्टेंबर २०२६</text>
+  <text x="285" y="78" font-family="sans-serif" font-size="9" fill="#1e40af" font-weight="bold" text-anchor="end">पृष्ठे ६</text>
+  <rect x="15" y="93" width="270" height="30" fill="#eff6ff" rx="3"/>
+  <text x="22" y="113" font-family="'Noto Sans Devanagari', sans-serif" font-size="13" font-weight="800" fill="#1e3a8a">भोकरदन तालुक्यात जलसंधारण कामांना गती</text>
+  <rect x="15" y="132" width="130" height="95" fill="#3b82f6" rx="3"/>
+  <text x="80" y="185" font-family="sans-serif" font-size="11" fill="#ffffff" font-weight="bold" text-anchor="middle">📷 ग्रामीण वार्ता</text>
+  <rect x="155" y="132" width="130" height="12" fill="#1e293b" rx="2"/>
+  <rect x="155" y="150" width="130" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="161" width="120" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="172" width="125" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="183" width="115" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="194" width="130" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="205" width="110" height="6" fill="#94a3b8" rx="1"/>
+  <rect x="155" y="216" width="125" height="6" fill="#94a3b8" rx="1"/>
+  <line x1="15" y1="237" x2="285" y2="237" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="15" y="255" font-family="'Noto Sans Devanagari', sans-serif" font-size="12" font-weight="700" fill="#0f172a">जाफ्राबाद कृषी उत्पन्न बाजार समिती निवडणूक</text>
+  <rect x="15" y="268" width="85" height="7" fill="#64748b" rx="1"/>
+  <rect x="15" y="280" width="80" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="15" y="292" width="85" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="110" y="268" width="85" height="7" fill="#64748b" rx="1"/>
+  <rect x="110" y="280" width="85" height="7" fill="#94a3b8" rx="1"/>
+  <rect x="205" y="268" width="80" height="43" fill="#f8fafc" stroke="#e2e8f0" rx="3"/>
+  <text x="245" y="293" font-family="sans-serif" font-size="9" fill="#1e40af" font-weight="bold" text-anchor="middle">जाहिरात</text>
+  <rect x="15" y="325" width="270" height="65" fill="#eff6ff" stroke="#bfdbfe" rx="4"/>
+  <text x="150" y="355" font-family="'Noto Sans Devanagari', sans-serif" font-size="11" font-weight="800" fill="#1e40af" text-anchor="middle">भोकरदन - जाफ्राबाद परिसरातील सर्व ताज्या बातम्या</text>
+</svg>

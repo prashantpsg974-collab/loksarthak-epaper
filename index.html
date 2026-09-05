@@ -286,57 +286,57 @@
         </div>
 
         <div class="editions-grid">
-          <div class="edition-card" onclick="switchEdition('jalna_main')">
+          <div class="edition-card" onclick="switchEdition('jalna_main')" title="जालना मुख्य आवृत्ती उघडा">
             <div class="edition-card-header">
               <span class="edition-name">जालना मुख्य</span>
               <span class="edition-date">०४ सप्टें</span>
             </div>
             <div class="edition-card-thumb">
-              <canvas id="editionThumb1" width="200" height="180"></canvas>
+              <img src="assets/thumb_jalna.svg" alt="जालना मुख्य आवृत्ती" class="edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Jalna+E-Paper'" />
             </div>
             <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
           </div>
 
-          <div class="edition-card" onclick="switchEdition('bhokardan')">
+          <div class="edition-card" onclick="switchEdition('bhokardan')" title="भोकरदन - जाफ्राबाद आवृत्ती उघडा">
             <div class="edition-card-header">
               <span class="edition-name">भोकरदन - जाफ्राबाद</span>
               <span class="edition-date">०४ सप्टें</span>
             </div>
             <div class="edition-card-thumb">
-              <canvas id="editionThumb2" width="200" height="180"></canvas>
+              <img src="assets/thumb_bhokardan.svg" alt="भोकरदन - जाफ्राबाद आवृत्ती" class="edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Bhokardan+E-Paper'" />
             </div>
             <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
           </div>
 
-          <div class="edition-card" onclick="switchEdition('partur')">
+          <div class="edition-card" onclick="switchEdition('partur')" title="परतूर - मंठा आवृत्ती उघडा">
             <div class="edition-card-header">
               <span class="edition-name">परतूर - मंठा</span>
               <span class="edition-date">०४ सप्टें</span>
             </div>
             <div class="edition-card-thumb">
-              <canvas id="editionThumb3" width="200" height="180"></canvas>
+              <img src="assets/thumb_partur.svg" alt="परतूर - मंठा आवृत्ती" class="edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Partur+E-Paper'" />
             </div>
             <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
           </div>
 
-          <div class="edition-card" onclick="switchEdition('ambad')">
+          <div class="edition-card" onclick="switchEdition('ambad')" title="अंबड - घनसावंगी आवृत्ती उघडा">
             <div class="edition-card-header">
               <span class="edition-name">अंबड - घनसावंगी</span>
               <span class="edition-date">०४ सप्टें</span>
             </div>
             <div class="edition-card-thumb">
-              <canvas id="editionThumb4" width="200" height="180"></canvas>
+              <img src="assets/thumb_ambad.svg" alt="अंबड - घनसावंगी आवृत्ती" class="edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Ambad+E-Paper'" />
             </div>
             <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
           </div>
 
-          <div class="edition-card" onclick="switchEdition('marathwada')">
+          <div class="edition-card" onclick="switchEdition('marathwada')" title="मराठवाडा एक्सप्रेस आवृत्ती उघडा">
             <div class="edition-card-header">
               <span class="edition-name">मराठवाडा एक्सप्रेस</span>
               <span class="edition-date">०४ सप्टें</span>
             </div>
             <div class="edition-card-thumb">
-              <canvas id="editionThumb5" width="200" height="180"></canvas>
+              <img src="assets/thumb_marathwada.svg" alt="मराठवाडा एक्सप्रेस आवृत्ती" class="edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Marathwada+E-Paper'" />
             </div>
             <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
           </div>
@@ -530,16 +530,16 @@
   <footer class="main-footer">
     <div class="container">
       <div class="footer-grid">
-        <!-- Brand Info -->
+        <!-- Brand Info & Exact Contact Details -->
         <div>
           <h3 class="footer-brand-title">दैनिक लोकसार्थक</h3>
-          <p style="margin-bottom: 12px; line-height: 1.6;">
-            जालना व मराठवाड्याचे विश्वासार्ह मराठी वृत्तपत्र. निष्पक्ष पत्रकारिता, लोकहिताचे प्रश्न आणि जलद बातम्यांचे हक्काचे व्यासपीठ.
+          <p style="margin-bottom: 14px; line-height: 1.6; color: #cbd5e1;">
+            जालना व मराठवाड्याचे विश्वासार्ह मराठी वृत्तपत्र. निष्पक्ष पत्रकारिता आणि जलद बातम्यांचे हक्काचे व्यासपीठ.
           </p>
-          <div style="font-size: 0.8rem; opacity: 0.8;">
-            <div>मुद्रक व प्रकाशक: प्रशांत गायकवाड</div>
-            <div>कार्यालय: लोकसार्थक भवन, रेल्वे स्टेशन रोड, जालना - ४३१२०३</div>
-            <div>ईमेल: editor@loksarthak.in | फोन: ०२४८२-२३४५६७</div>
+          <div class="footer-contact-details" style="display: flex; flex-direction: column; gap: 8px; font-size: 0.88rem; color: #cbd5e1;">
+            <div><i class="fa-solid fa-envelope" style="color:var(--accent); margin-right: 6px;"></i> <strong>Email:</strong> <a href="mailto:loksarthak@gmail.com" style="color: #38bdf8; text-decoration: none;">loksarthak@gmail.com</a></div>
+            <div><i class="fa-solid fa-phone" style="color:var(--accent); margin-right: 6px;"></i> <strong>Mob:</strong> <a href="tel:7875464703" style="color: #38bdf8; text-decoration: none;">7875464703</a></div>
+            <div style="line-height: 1.5;"><i class="fa-solid fa-location-dot" style="color:var(--accent); margin-right: 6px;"></i> <strong>Address:</strong> Krushna Computer &amp; Multiservices, Dhakne Complex, Ambad Road, Old Jalna Tq.Dist. Jalna - 431203</div>
           </div>
         </div>
 
@@ -581,7 +581,7 @@
       </div>
 
       <div class="footer-bottom-bar">
-        <p>सर्वाधिकार सुरक्षित © २०२६ दैनिक लोकसार्थक जालना. | Registered with Registrar of Newspapers for India (RNI): MAHMAR/2015/64821</p>
+        <p>© 2026 Dainik Loksarthak. All rights reserved.</p>
       </div>
     </div>
   </footer>
