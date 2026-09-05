@@ -578,6 +578,11 @@ function updatePageDropdown() {
 }
 
 async function renderPage(indexOrPageNum) {
+  if ((window.pdfDoc || state.pdfDoc) && typeof window.renderPdfPage === 'function') {
+    const p = (typeof indexOrPageNum === 'number') ? indexOrPageNum : (state.currentPage || 1);
+    window.renderPdfPage(p);
+    return;
+  }
   let index = 0;
   if (uploadedPages.length > 0) {
     if (typeof indexOrPageNum === 'number') {

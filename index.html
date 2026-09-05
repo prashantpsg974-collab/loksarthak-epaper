@@ -687,101 +687,46 @@
     }
     window.fitFullPaper = fitFullPaper;
 
-    // 1. Listen for the PDF file upload
-    document.getElementById('pdfUpload').addEventListener('change', function(event) {
-        const file = event.target.files[0];
-        if (!file || file.type !== 'application/pdf') {
-            alert('Please upload a valid PDF file.');
-            return;
-        }
+    // Function to render specific PDF page
+    function renderPdfPage(num) {
+        const doc = window.pdfDoc || pdfDoc;
+        if (!doc) return;
 
-        // Convert the uploaded file to an ArrayBuffer
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const typedarray = new Uint8Array(e.target.result);
-            
-            // Load the PDF document
-            pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
-                pdfDoc = pdf;
-                window.pdfDoc = pdf;
-                pageNum = 1; // Reset to page 1 on new upload
-                window.pageNum = 1;
-
-                // Clear and populate #pageSelect dropdown dynamically
-                const pageSelect = document.getElementById('pageSelect');
-                if (pageSelect) {
-                    pageSelect.innerHTML = '';
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const opt = document.createElement('option');
-                        opt.value = i;
-                        opt.innerText = `पृष्ठ ${i}`;
-                        pageSelect.appendChild(opt);
-                    }
-                    pageSelect.value = 1;
-                }
-
-                // Update #pageIndicator text
-                const pageIndicator = document.getElementById('pageIndicator');
-                if (pageIndicator) {
-                    pageIndicator.innerText = `1 / ${pdf.numPages}`;
-                }
-
-                const sidebarPageCount = document.getElementById('sidebarPageCount');
-                if (sidebarPageCount) {
-                    sidebarPageCount.innerText = `${pdf.numPages} पाने`;
-                }
-
-                updateQuickPagePillsUI(pdf.numPages, 1);
-                // Set default zoom to 100% for proper readable newspaper viewing
-                setEpaperZoom(1.0);
-                renderPage(pageNum);
-            }).catch(function(error) {
-                console.error('Error loading PDF:', error);
-                alert('Error loading PDF. Check console for details.');
-            });
-        };
-        reader.readAsArrayBuffer(file);
-    });
-
-    // 2. Render the specific page onto the canvas
-    function renderPage(num) {
-        if (!pdfDoc) return;
-
-        pdfDoc.getPage(num).then(function(page) {
+        doc.getPage(num).then(function(page) {
             const viewport = page.getViewport({ scale: scale });
-            
             const canvas = document.getElementById('epaperCanvas');
             if (!canvas) {
                 console.error("Canvas element with ID 'epaperCanvas' not found.");
                 return;
             }
             const ctx = canvas.getContext('2d');
-            
-            // Adjust canvas size to match the PDF viewport
             canvas.height = viewport.height;
             canvas.width = viewport.width;
 
-            // Render PDF page into canvas context
             const renderContext = {
                 canvasContext: ctx,
                 viewport: viewport
             };
             page.render(renderContext).promise.then(function() {
-                // Ensure natural readable view
                 const container = document.getElementById('paperPageContainer');
-                if (container && (!state || !state.zoomLevel || state.zoomLevel < 0.6)) {
+                if (container && (!window.state || !window.state.zoomLevel || window.state.zoomLevel < 0.6)) {
                     setEpaperZoom(1.0);
                 }
             });
         });
     }
-    window.renderPdfPage = renderPage;
+    window.renderPdfPage = renderPdfPage;
 
     // Load PDF from ArrayBuffer / Uint8Array
     function loadPdfFromBytes(typedarray) {
-        pdfjsLib.getDocument({ data: typedarray }).promise.then(function(pdf) {
+        const loadingTask = pdfjsLib.getDocument({ data: typedarray });
+        return loadingTask.promise.then(function(pdf) {
             pdfDoc = pdf;
             window.pdfDoc = pdf;
+            if (typeof state !== 'undefined') {
+                state.pdfDoc = pdf;
+                state.totalPages = pdf.numPages;
+            }
             pageNum = 1;
             window.pageNum = 1;
 
@@ -809,7 +754,7 @@
 
             updateQuickPagePillsUI(pdf.numPages, 1);
             setEpaperZoom(1.0);
-            renderPage(1);
+            renderPdfPage(1);
         }).catch(function(error) {
             console.error('Error loading PDF from bytes:', error);
         });
@@ -818,73 +763,62 @@
     // Async Initialization and Rendering function with idb-keyval
     async function initEpaperFromDB() {
         try {
+            if (typeof idbKeyval === 'undefined') {
+                setTimeout(initEpaperFromDB, 80);
+                return;
+            }
+
             // 1. Fetch Main Paper Data
             const mainData = await idbKeyval.get('main_paper');
             const mainType = await idbKeyval.get('main_paper_type');
 
             if (mainData) {
-                // If it is a PDF (ArrayBuffer or typed as PDF)
-                const isPdf = (mainType === 'application/pdf') || 
-                              (!mainType && mainData instanceof ArrayBuffer);
+                let arrayBuffer = null;
+                if (mainData instanceof ArrayBuffer) {
+                    arrayBuffer = mainData;
+                } else if (mainData instanceof Blob) {
+                    arrayBuffer = await mainData.arrayBuffer();
+                }
 
-                if (isPdf && typeof pdfjsLib !== 'undefined') {
-                    const uint8Array = new Uint8Array(mainData);
-                    pdfjsLib.getDocument({ data: uint8Array }).promise.then(function(pdf) {
-                        pdfDoc = pdf;
-                        window.pdfDoc = pdf;
-                        pageNum = 1;
-                        window.pageNum = 1;
+                let isPdf = (mainType === 'application/pdf');
+                if (arrayBuffer && !isPdf) {
+                    const header = new Uint8Array(arrayBuffer.slice(0, 5));
+                    if (header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44 && header[3] === 0x46) {
+                        isPdf = true;
+                    }
+                }
 
-                        const pageSelect = document.getElementById('pageSelect');
-                        if (pageSelect) {
-                            pageSelect.innerHTML = '';
-                            for (let i = 1; i <= pdf.numPages; i++) {
-                                const opt = document.createElement('option');
-                                opt.value = i;
-                                opt.innerText = `पृष्ठ ${i}`;
-                                pageSelect.appendChild(opt);
+                if (isPdf && arrayBuffer && typeof pdfjsLib !== 'undefined') {
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    await loadPdfFromBytes(uint8Array);
+                } else if (mainData) {
+                    let blob = null;
+                    if (mainData instanceof Blob) {
+                        blob = mainData;
+                    } else if (arrayBuffer) {
+                        blob = new Blob([arrayBuffer], { type: mainType || 'image/jpeg' });
+                    }
+                    if (blob) {
+                        const imgUrl = URL.createObjectURL(blob);
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.getElementById('epaperCanvas');
+                            if (canvas) {
+                                canvas.width = img.naturalWidth || 800;
+                                canvas.height = img.naturalHeight || 1130;
+                                const ctx = canvas.getContext('2d');
+                                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                ctx.drawImage(img, 0, 0);
                             }
-                            pageSelect.value = 1;
-                        }
-
-                        const pageIndicator = document.getElementById('pageIndicator');
-                        if (pageIndicator) {
-                            pageIndicator.innerText = `1 / ${pdf.numPages}`;
-                        }
-
-                        const sidebarPageCount = document.getElementById('sidebarPageCount');
-                        if (sidebarPageCount) {
-                            sidebarPageCount.innerText = `${pdf.numPages} पाने`;
-                        }
-
-                        updateQuickPagePillsUI(pdf.numPages, 1);
-                        setEpaperZoom(1.0);
-                        renderPage(1);
-                    }).catch(function(err) {
-                        console.error('Error loading PDF with PDF.js:', err);
-                    });
-                } else if (mainType && mainType.startsWith('image/')) {
-                    // If it is an Image
-                    const blob = new Blob([mainData], { type: mainType });
-                    const imgUrl = URL.createObjectURL(blob);
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.getElementById('epaperCanvas');
-                        if (canvas) {
-                            canvas.width = img.naturalWidth || 800;
-                            canvas.height = img.naturalHeight || 1130;
-                            const ctx = canvas.getContext('2d');
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, 0, 0);
-                        }
-                        const pageIndicator = document.getElementById('pageIndicator');
-                        if (pageIndicator) pageIndicator.innerText = `1 / 1`;
-                        const sidebarPageCount = document.getElementById('sidebarPageCount');
-                        if (sidebarPageCount) sidebarPageCount.innerText = `1 पान`;
-                        updateQuickPagePillsUI(1, 1);
-                        setEpaperZoom(1.0);
-                    };
-                    img.src = imgUrl;
+                            const pageIndicator = document.getElementById('pageIndicator');
+                            if (pageIndicator) pageIndicator.innerText = `1 / 1`;
+                            const sidebarPageCount = document.getElementById('sidebarPageCount');
+                            if (sidebarPageCount) sidebarPageCount.innerText = `1 पान`;
+                            updateQuickPagePillsUI(1, 1);
+                            setEpaperZoom(1.0);
+                        };
+                        img.src = imgUrl;
+                    }
                 }
             }
 
@@ -901,16 +835,23 @@
                 const regData = await idbKeyval.get(reg.key);
                 const regType = await idbKeyval.get(`${reg.key}_type`);
                 if (regData) {
-                    const blob = new Blob([regData], { type: regType || 'image/jpeg' });
-                    const url = URL.createObjectURL(blob);
-                    const container = document.getElementById(reg.elemId);
-                    if (container) {
-                        const imgTag = container.querySelector('img');
-                        if (imgTag) {
-                            imgTag.src = url;
-                            imgTag.style.cssText = 'width: 100%; height: 200px; object-fit: cover;';
-                        } else {
-                            container.innerHTML = `<img src="${url}" alt="विभागीय आवृत्ती" class="regional-thumbnail edition-thumb-img" style="width: 100%; height: 200px; object-fit: cover;" />`;
+                    let blob = null;
+                    if (regData instanceof Blob) {
+                        blob = regData;
+                    } else if (regData instanceof ArrayBuffer) {
+                        blob = new Blob([regData], { type: regType || 'image/jpeg' });
+                    }
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const container = document.getElementById(reg.elemId);
+                        if (container) {
+                            const imgTag = container.querySelector('img');
+                            if (imgTag) {
+                                imgTag.src = url;
+                                imgTag.style.cssText = 'width: 100%; height: 200px; object-fit: cover;';
+                            } else {
+                                container.innerHTML = `<img src="${url}" alt="विभागीय आवृत्ती" class="regional-thumbnail edition-thumb-img" style="width: 100%; height: 200px; object-fit: cover;" />`;
+                            }
                         }
                     }
                 }
@@ -923,28 +864,32 @@
     // 3. Navigation Controls Event Listeners
     // Previous Button (<) Listener
     document.getElementById('prevPage')?.addEventListener('click', function() {
-        if (!pdfDoc || pageNum <= 1) return;
+        if (!window.pdfDoc && !pdfDoc) return;
+        const doc = window.pdfDoc || pdfDoc;
+        if (pageNum <= 1) return;
         pageNum--;
         window.pageNum = pageNum;
-        renderPage(pageNum);
+        renderPdfPage(pageNum);
         updatePaginationUI();
     });
 
     // Next Button (>) Listener
     document.getElementById('nextPage')?.addEventListener('click', function() {
-        if (!pdfDoc || pageNum >= pdfDoc.numPages) return;
+        if (!window.pdfDoc && !pdfDoc) return;
+        const doc = window.pdfDoc || pdfDoc;
+        if (pageNum >= doc.numPages) return;
         pageNum++;
         window.pageNum = pageNum;
-        renderPage(pageNum);
+        renderPdfPage(pageNum);
         updatePaginationUI();
     });
 
     // Dropdown Change Listener
     document.getElementById('pageSelect')?.addEventListener('change', function() {
-        if (!pdfDoc) return;
+        if (!window.pdfDoc && !pdfDoc) return;
         pageNum = parseInt(this.value, 10);
         window.pageNum = pageNum;
-        renderPage(pageNum);
+        renderPdfPage(pageNum);
         updatePaginationUI();
     });
 
