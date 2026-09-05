@@ -405,6 +405,13 @@
       </div>
     </section>
 
+    <!-- GLOBAL SAVE & REDIRECT BUTTON -->
+    <div style="margin-top: 25px; margin-bottom: 30px;">
+      <button id="globalSaveBtn" style="width: 100%; padding: 15px; font-size: 18px; background: #28a745; color: white; border: none; cursor: pointer; margin-top: 20px; font-weight: 700; border-radius: 8px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); transition: all 0.2s ease;">
+        💾 Save All & Publish
+      </button>
+    </div>
+
   </main>
 
   <footer class="main-footer" style="padding: 20px 0; margin-top: 40px; text-align: center;">
@@ -413,53 +420,143 @@
     </div>
   </footer>
 
-  <!-- Storage Logic Script -->
+  <!-- IndexedDB Storage Logic Script -->
   <script>
-    // Load existing stored previews on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      loadStoredStatus();
-    });
+    const DB_NAME = 'LoksarthakDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'epaperStore';
 
-    function loadStoredStatus() {
-      // 1. Check Main Paper
-      const mainData = localStorage.getItem('mainEpaperData');
-      const mainStatusBadge = document.getElementById('mainStatusBadge');
-      const mainPreview = document.getElementById('mainPreviewContainer');
-      if (mainData) {
-        if (mainStatusBadge) mainStatusBadge.innerHTML = '<span class="status-badge">✅ मुख्य अंक सेव्ह आहे</span>';
-        if (mainPreview) {
-          if (mainData.startsWith('data:application/pdf')) {
-            mainPreview.innerHTML = '<p style="color:#2563eb; font-weight:600; font-size:0.9rem;">📄 PDF ई-पेपर सेव्ह आहे</p>';
-          } else {
-            mainPreview.innerHTML = '<p style="color:#16a34a; font-weight:600; font-size:0.9rem;">🖼️ इमेज ई-पेपर सेव्ह आहे</p>';
+    // Helper: Open IndexedDB
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = function(e) {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME);
           }
-        }
-      }
-
-      // 2. Check Regional Cards
-      const regions = [
-        { key: 'reg_jalna_main', prevId: 'prev_jalna_main', defaultThumb: 'assets/thumb_jalna.svg' },
-        { key: 'reg_bhokardan', prevId: 'prev_bhokardan', defaultThumb: 'assets/thumb_bhokardan.svg' },
-        { key: 'reg_partur', prevId: 'prev_partur', defaultThumb: 'assets/thumb_partur.svg' },
-        { key: 'reg_ambad', prevId: 'prev_ambad', defaultThumb: 'assets/thumb_ambad.svg' },
-        { key: 'reg_marathwada', prevId: 'prev_marathwada', defaultThumb: 'assets/thumb_marathwada.svg' }
-      ];
-
-      regions.forEach(r => {
-        const data = localStorage.getItem(r.key);
-        const box = document.getElementById(r.prevId);
-        if (box) {
-          if (data) {
-            box.innerHTML = `<img src="${data}" alt="कव्हर प्रीव्ह्यू" />`;
-          } else {
-            box.innerHTML = `<img src="${r.defaultThumb}" alt="डिफॉल्ट कव्हर" />`;
-          }
-        }
+        };
+        request.onsuccess = function(e) {
+          resolve(e.target.result);
+        };
+        request.onerror = function(e) {
+          reject(e.target.error);
+        };
       });
     }
 
-    // Save Main Paper to localStorage
-    function saveMainPaper() {
+    // Helper: Put item into IndexedDB
+    function setItem(key, val) {
+      return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.put(val, key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = (e) => reject(e.target.error);
+          tx.onabort = (e) => reject(e.target.error);
+        });
+      });
+    }
+
+    // Helper: Get item from IndexedDB
+    function getItem(key) {
+      return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = (e) => reject(e.target.error);
+        });
+      });
+    }
+
+    // Helper: Delete item from IndexedDB
+    function deleteItem(key) {
+      return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.delete(key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = (e) => reject(e.target.error);
+        });
+      });
+    }
+
+    // Helper: Clear all items from IndexedDB
+    function clearAllItems() {
+      return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.clear();
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = (e) => reject(e.target.error);
+        });
+      });
+    }
+
+    // Load existing stored previews on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadStoredStatus();
+
+      // Attach listener to #globalSaveBtn
+      const globalBtn = document.getElementById('globalSaveBtn');
+      if (globalBtn) {
+        globalBtn.addEventListener('click', handleGlobalSaveAndPublish);
+      }
+    });
+
+    async function loadStoredStatus() {
+      try {
+        // 1. Check Main Paper
+        const mainRecord = await getItem('main_paper');
+        const mainStatusBadge = document.getElementById('mainStatusBadge');
+        const mainPreview = document.getElementById('mainPreviewContainer');
+        if (mainRecord) {
+          if (mainStatusBadge) mainStatusBadge.innerHTML = '<span class="status-badge">✅ मुख्य अंक सेव्ह आहे (IndexedDB)</span>';
+          if (mainPreview) {
+            const type = mainRecord.type || '';
+            const name = mainRecord.name || '';
+            if (type.includes('pdf') || name.toLowerCase().endsWith('.pdf')) {
+              mainPreview.innerHTML = `<p style="color:#2563eb; font-weight:600; font-size:0.9rem;">📄 PDF ई-पेपर सेव्ह आहे (${(mainRecord.size / (1024*1024)).toFixed(2)} MB)</p>`;
+            } else {
+              const url = URL.createObjectURL(mainRecord);
+              mainPreview.innerHTML = `<p style="color:#16a34a; font-weight:600; font-size:0.9rem;">🖼️ इमेज ई-पेपर सेव्ह आहे</p><img src="${url}" style="max-height:100px; border-radius:4px; margin-top:6px;" />`;
+            }
+          }
+        }
+
+        // 2. Check Regional Cards
+        const regions = [
+          { key: 'reg_jalna_main', prevId: 'prev_jalna_main', defaultThumb: 'assets/thumb_jalna.svg' },
+          { key: 'reg_bhokardan', prevId: 'prev_bhokardan', defaultThumb: 'assets/thumb_bhokardan.svg' },
+          { key: 'reg_partur', prevId: 'prev_partur', defaultThumb: 'assets/thumb_partur.svg' },
+          { key: 'reg_ambad', prevId: 'prev_ambad', defaultThumb: 'assets/thumb_ambad.svg' },
+          { key: 'reg_marathwada', prevId: 'prev_marathwada', defaultThumb: 'assets/thumb_marathwada.svg' }
+        ];
+
+        for (const r of regions) {
+          const record = await getItem(r.key);
+          const box = document.getElementById(r.prevId);
+          if (box) {
+            if (record) {
+              const url = URL.createObjectURL(record);
+              box.innerHTML = `<img src="${url}" alt="कव्हर प्रीव्ह्यू" style="width:100%; height:100%; object-fit:cover;" />`;
+            } else {
+              box.innerHTML = `<img src="${r.defaultThumb}" alt="डिफॉल्ट कव्हर" style="width:100%; height:100%; object-fit:cover;" />`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading stored status from IndexedDB:', err);
+      }
+    }
+
+    // Save Individual Main Paper to IndexedDB
+    async function saveMainPaper() {
       const input = document.getElementById('mainPaperInput');
       if (!input || !input.files || input.files.length === 0) {
         alert('कृपया मुख्य ई-पेपरसाठी PDF किंवा इमेज फाईल निवडा.');
@@ -467,27 +564,18 @@
       }
 
       const file = input.files[0];
-      const reader = new FileReader();
-      
-      reader.onload = function(e) {
-        try {
-          const dataUrl = e.target.result;
-          localStorage.setItem('mainEpaperData', dataUrl);
-          localStorage.setItem('mainEpaperType', file.type);
-          localStorage.setItem('mainEpaperName', file.name);
-          alert('🎉 मुख्य ई-पेपर यशस्वीरित्या सेव्ह झाला! मुख्य पोर्टलवर आता हाच अंक दिसेल.');
-          loadStoredStatus();
-        } catch (err) {
-          console.error(err);
-          alert('डेटा सेव्ह करताना त्रुटी: फाईलचा आकार खूप मोठा असू शकतो. (Storage limit reached)');
-        }
-      };
-
-      reader.readAsDataURL(file);
+      try {
+        await setItem('main_paper', file);
+        alert('🎉 मुख्य ई-पेपर यशस्वीरित्या IndexedDB मध्ये सेव्ह झाला!');
+        loadStoredStatus();
+      } catch (err) {
+        console.error('Error saving main paper to IndexedDB:', err);
+        alert('त्रुटी: फाईल सेव्ह करता आली नाही. ' + err.message);
+      }
     }
 
-    // Save Regional Paper to localStorage
-    function saveRegionalPaper(storageKey, inputId, previewBoxId, regionTitle) {
+    // Save Individual Regional Paper to IndexedDB
+    async function saveRegionalPaper(storageKey, inputId, previewBoxId, regionTitle) {
       const input = document.getElementById(inputId);
       if (!input || !input.files || input.files.length === 0) {
         alert(`कृपया ${regionTitle} साठी फाईल निवडा.`);
@@ -495,43 +583,96 @@
       }
 
       const file = input.files[0];
-      const reader = new FileReader();
+      try {
+        await setItem(storageKey, file);
+        alert(`🎉 ${regionTitle} आवृत्ती यशस्वीरित्या IndexedDB मध्ये सेव्ह झाली!`);
+        loadStoredStatus();
+      } catch (err) {
+        console.error(`Error saving ${storageKey} to IndexedDB:`, err);
+        alert('त्रुटी: फाईल सेव्ह करता आली नाही. ' + err.message);
+      }
+    }
 
-      reader.onload = function(e) {
+    // Global Save & Publish Handler
+    async function handleGlobalSaveAndPublish() {
+      const btn = document.getElementById('globalSaveBtn');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ Saving... Please wait';
+      btn.disabled = true;
+
+      try {
+        const db = await openDB();
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+
+        // 1. Gather Main Paper
+        const mainInput = document.getElementById('mainPaperInput');
+        if (mainInput && mainInput.files && mainInput.files.length > 0) {
+          store.put(mainInput.files[0], 'main_paper');
+        }
+
+        // 2. Gather Regional Editions
+        const regionalInputs = [
+          { id: 'regionJalnaInput', key: 'reg_jalna_main' },
+          { id: 'regionBhokardanInput', key: 'reg_bhokardan' },
+          { id: 'regionParturInput', key: 'reg_partur' },
+          { id: 'regionAmbadInput', key: 'reg_ambad' },
+          { id: 'regionMarathwadaInput', key: 'reg_marathwada' }
+        ];
+
+        regionalInputs.forEach(item => {
+          const input = document.getElementById(item.id);
+          if (input && input.files && input.files.length > 0) {
+            store.put(input.files[0], item.key);
+          }
+        });
+
+        // Strictly wait for the transaction to complete
+        await new Promise((resolve, reject) => {
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = (e) => reject(tx.error || e);
+          tx.onabort = (e) => reject(tx.error || e);
+        });
+
+        btn.innerHTML = '✅ Saved! Redirecting...';
+        // Automatic redirect to main viewer
+        window.location.href = 'index.html';
+      } catch (err) {
+        console.error('Error during Global Save to IndexedDB:', err);
+        alert('त्रुटी: डेटा सेव्ह करताना समस्या आली. ' + (err.message || err));
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    }
+
+    // Clear Single Slot from IndexedDB
+    async function clearSingleSlot(storageKey, previewBoxId) {
+      try {
+        await deleteItem(storageKey);
+        alert('हा स्लॉट रिसेट केला आहे.');
+        loadStoredStatus();
+      } catch (err) {
+        console.error('Error clearing slot:', err);
+      }
+    }
+
+    // Clear All Data from IndexedDB
+    async function clearAllData() {
+      if (confirm('तुम्हाला सर्व सेव्ह केलेला ई-पेपर डेटा IndexedDB मधून रिसेट करायचा आहे का?')) {
         try {
-          const dataUrl = e.target.result;
-          localStorage.setItem(storageKey, dataUrl);
-          alert(`🎉 ${regionTitle} आवृत्ती यशस्वीरित्या सेव्ह झाली!`);
+          await clearAllItems();
+          // Also clear any lingering localStorage keys
+          localStorage.removeItem('mainEpaperData');
+          localStorage.removeItem('reg_jalna_main');
+          localStorage.removeItem('reg_bhokardan');
+          localStorage.removeItem('reg_partur');
+          localStorage.removeItem('reg_ambad');
+          localStorage.removeItem('reg_marathwada');
+          alert('सर्व डेटा यशस्वीरित्या रिसेट केला!');
           loadStoredStatus();
         } catch (err) {
-          console.error(err);
-          alert('डेटा सेव्ह करताना त्रुटी: फाईलचा आकार खूप मोठा असू शकतो.');
+          console.error('Error clearing all items:', err);
         }
-      };
-
-      reader.readAsDataURL(file);
-    }
-
-    // Clear Single Slot
-    function clearSingleSlot(storageKey, previewBoxId) {
-      localStorage.removeItem(storageKey);
-      alert('हा स्लॉट रिसेट केला आहे.');
-      loadStoredStatus();
-    }
-
-    // Clear All Data
-    function clearAllData() {
-      if (confirm('तुम्हाला सर्व सेव्ह केलेला ई-पेपर डेटा रिसेट करायचा आहे का?')) {
-        localStorage.removeItem('mainEpaperData');
-        localStorage.removeItem('mainEpaperType');
-        localStorage.removeItem('mainEpaperName');
-        localStorage.removeItem('reg_jalna_main');
-        localStorage.removeItem('reg_bhokardan');
-        localStorage.removeItem('reg_partur');
-        localStorage.removeItem('reg_ambad');
-        localStorage.removeItem('reg_marathwada');
-        alert('सर्व डेटा यशस्वीरित्या रिसेट केला!');
-        loadStoredStatus();
       }
     }
   </script>

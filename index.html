@@ -812,65 +812,102 @@
         });
     }
 
-    // Synchronize localStorage uploaded data to viewer & regional cards
-    function syncLocalStorageToViewer() {
-        // 1. Sync Main Paper Data
-        const mainData = localStorage.getItem('mainEpaperData');
-        if (mainData) {
-            if (mainData.startsWith('data:application/pdf') || mainData.includes('application/pdf')) {
-                try {
-                    const base64Index = mainData.indexOf(';base64,');
-                    const base64String = base64Index !== -1 ? mainData.substring(base64Index + 8) : mainData;
-                    const binaryString = atob(base64String);
-                    const len = binaryString.length;
-                    const bytes = new Uint8Array(len);
-                    for (let i = 0; i < len; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
-                    }
-                    loadPdfFromBytes(bytes);
-                } catch (err) {
-                    console.error('Error parsing stored Base64 PDF:', err);
-                }
-            } else if (mainData.startsWith('data:image')) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.getElementById('epaperCanvas');
-                    if (canvas) {
-                        canvas.width = img.naturalWidth || 800;
-                        canvas.height = img.naturalHeight || 1130;
-                        const ctx = canvas.getContext('2d');
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(img, 0, 0);
-                    }
-                    const pageIndicator = document.getElementById('pageIndicator');
-                    if (pageIndicator) pageIndicator.innerText = `1 / 1`;
-                    const sidebarPageCount = document.getElementById('sidebarPageCount');
-                    if (sidebarPageCount) sidebarPageCount.innerText = `1 पान`;
-                    updateQuickPagePillsUI(1, 1);
-                    setEpaperZoom(1.0);
-                };
-                img.src = mainData;
-            }
-        }
+    const DB_NAME = 'LoksarthakDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'epaperStore';
 
-        // 2. Sync Regional Cards
-        const regionalEditions = [
-            { key: 'reg_jalna_main', elemId: 'thumb_reg_jalna_main' },
-            { key: 'reg_bhokardan', elemId: 'thumb_reg_bhokardan' },
-            { key: 'reg_partur', elemId: 'thumb_reg_partur' },
-            { key: 'reg_ambad', elemId: 'thumb_reg_ambad' },
-            { key: 'reg_marathwada', elemId: 'thumb_reg_marathwada' }
-        ];
-
-        regionalEditions.forEach(function(reg) {
-            const dataUrl = localStorage.getItem(reg.key);
-            if (dataUrl) {
-                const thumbContainer = document.getElementById(reg.elemId);
-                if (thumbContainer) {
-                    thumbContainer.innerHTML = `<img src="${dataUrl}" alt="विभागीय आवृत्ती" style="width: 100%; height: 200px; object-fit: cover;" />`;
+    // Helper: Open IndexedDB in index.html
+    function openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onupgradeneeded = function(e) {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                    db.createObjectStore(STORE_NAME);
                 }
-            }
+            };
+            request.onsuccess = function(e) {
+                resolve(e.target.result);
+            };
+            request.onerror = function(e) {
+                reject(e.target.error);
+            };
         });
+    }
+
+    // Helper: Get item from IndexedDB
+    function getDBItem(key) {
+        return openDB().then(db => {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const req = store.get(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = (e) => reject(req.error || e);
+            });
+        });
+    }
+
+    // Synchronize IndexedDB uploaded data to viewer & regional cards
+    async function syncIndexedDBToViewer() {
+        try {
+            // 1. Fetch main_paper from IndexedDB
+            const mainRecord = await getDBItem('main_paper');
+            if (mainRecord) {
+                const type = mainRecord.type || '';
+                const name = mainRecord.name || '';
+                const isPdf = type.includes('pdf') || name.toLowerCase().endsWith('.pdf') || (mainRecord instanceof Blob && type === 'application/pdf');
+
+                if (isPdf || (mainRecord instanceof Blob && !type.startsWith('image/'))) {
+                    // It's a PDF Blob
+                    const arrayBuffer = await mainRecord.arrayBuffer();
+                    loadPdfFromBytes(new Uint8Array(arrayBuffer));
+                } else if (mainRecord instanceof Blob) {
+                    // It's an image Blob
+                    const imgUrl = URL.createObjectURL(mainRecord);
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.getElementById('epaperCanvas');
+                        if (canvas) {
+                            canvas.width = img.naturalWidth || 800;
+                            canvas.height = img.naturalHeight || 1130;
+                            const ctx = canvas.getContext('2d');
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0);
+                        }
+                        const pageIndicator = document.getElementById('pageIndicator');
+                        if (pageIndicator) pageIndicator.innerText = `1 / 1`;
+                        const sidebarPageCount = document.getElementById('sidebarPageCount');
+                        if (sidebarPageCount) sidebarPageCount.innerText = `1 पान`;
+                        updateQuickPagePillsUI(1, 1);
+                        setEpaperZoom(1.0);
+                    };
+                    img.src = imgUrl;
+                }
+            }
+
+            // 2. Fetch regional records from IndexedDB
+            const regionalEditions = [
+                { key: 'reg_jalna_main', elemId: 'thumb_reg_jalna_main' },
+                { key: 'reg_bhokardan', elemId: 'thumb_reg_bhokardan' },
+                { key: 'reg_partur', elemId: 'thumb_reg_partur' },
+                { key: 'reg_ambad', elemId: 'thumb_reg_ambad' },
+                { key: 'reg_marathwada', elemId: 'thumb_reg_marathwada' }
+            ];
+
+            for (const reg of regionalEditions) {
+                const regRecord = await getDBItem(reg.key);
+                if (regRecord && regRecord instanceof Blob) {
+                    const blobUrl = URL.createObjectURL(regRecord);
+                    const thumbContainer = document.getElementById(reg.elemId);
+                    if (thumbContainer) {
+                        thumbContainer.innerHTML = `<img src="${blobUrl}" alt="विभागीय आवृत्ती" style="width: 100%; height: 200px; object-fit: cover;" />`;
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error synchronizing from IndexedDB:', err);
+        }
     }
 
     // 3. Navigation Controls Event Listeners
@@ -901,10 +938,10 @@
         updatePaginationUI();
     });
 
-    // Initialize initial quick pills and localStorage sync on load
+    // Initialize initial quick pills and IndexedDB sync on load
     document.addEventListener('DOMContentLoaded', function() {
         updateQuickPagePillsUI(6, 1);
-        syncLocalStorageToViewer();
+        syncIndexedDBToViewer();
     });
   </script>
 </body>
