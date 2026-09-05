@@ -66,6 +66,14 @@ app.get('/sw.js', (req, res) => {
   res.sendFile(path.join(__dirname, 'sw.js'));
 });
 
+app.get('/upload.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'upload.html'));
+});
+
+app.get('/upload', (req, res) => {
+  res.sendFile(path.join(__dirname, 'upload.html'));
+});
+
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(__dirname));

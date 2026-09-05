@@ -16,6 +16,14 @@
       "dest": "server.js"
     },
     {
+      "src": "/upload.html",
+      "dest": "server.js"
+    },
+    {
+      "src": "/upload",
+      "dest": "server.js"
+    },
+    {
       "src": "/manifest.json",
       "dest": "server.js"
     },
