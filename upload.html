@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Paper Upload Dashboard - दैनिक लोकसार्थक</title>
+  
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800;900&family=Rozha+One&family=Yantramanav:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    .upload-dashboard-container {
+      max-width: 1200px;
+      margin: 30px auto 60px;
+      padding: 0 20px;
+    }
+    
+    .dashboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      margin-bottom: 25px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    .dashboard-title h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .dashboard-title p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+    
+    .btn-return-portal {
+      background: var(--primary);
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+    }
+    
+    .btn-return-portal:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    .upload-section-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    .section-title-wrap {
+      border-bottom: 2px solid var(--border-light);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .section-title-wrap h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .main-upload-box {
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      background: #f8fafc;
+      transition: var(--transition);
+    }
+    
+    .main-upload-box:hover {
+      border-color: var(--primary);
+      background: #fef2f2;
+    }
+    
+    .file-input-wrapper {
+      margin: 15px 0;
+    }
+    
+    .custom-file-input {
+      font-size: 0.95rem;
+      padding: 10px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+      max-width: 400px;
+      width: 100%;
+    }
+    
+    .btn-save-main {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn-save-main:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-2px);
+    }
+    
+    /* Regional Forms Grid */
+    .regional-upload-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    
+    .regional-form-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      transition: var(--transition);
+    }
+    
+    .regional-form-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+    
+    .regional-card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .regional-preview-box {
+      width: 100%;
+      height: 140px;
+      background: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      border: 1px dashed #cbd5e1;
+    }
+    
+    .regional-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .regional-preview-box .no-preview {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 10px;
+    }
+    
+    .regional-input {
+      width: 100%;
+      font-size: 0.82rem;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    
+    .btn-save-regional {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: var(--transition);
+    }
+    
+    .btn-save-regional:hover {
+      background: var(--primary-dark);
+    }
+    
+    .btn-clear-slot {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: var(--transition);
+    }
+    
+    .btn-clear-slot:hover {
+      background: #fee2e2;
+      color: #ef4444;
+      border-color: #fca5a5;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background: #dcfce7;
+      color: #15803d;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body style="background: var(--bg-main);">
+
+  <!-- Brand Header -->
+  <header class="main-header" style="padding: 12px 0;">
+    <div class="container" style="display: flex; align-items: center; justify-content: space-between;">
+      <a href="index.html" class="newspaper-brand" style="text-decoration: none;">
+        <h1 class="newspaper-title" style="font-size: 2.2rem; margin: 0;">दैनिक लोकसार्थक</h1>
+      </a>
+      <a href="index.html" class="btn-return-portal">
+        <i class="fa-solid fa-arrow-left"></i> <span>मुख्य ई-पेपर पोर्टल पहा</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="upload-dashboard-container">
+    
+    <!-- Dashboard Top Bar -->
+    <div class="dashboard-header">
+      <div class="dashboard-title">
+        <h1><i class="fa-solid fa-cloud-arrow-up" style="color:var(--primary);"></i> E-Paper Upload Dashboard</h1>
+        <p>येथून मुख्य ई-पेपर PDF / इमेजेस व विभागीय आवृत्त्यांचे अंक थेट अपलोड व व्यवस्थापित करा.</p>
+      </div>
+      <div>
+        <button onclick="clearAllData()" class="btn-clear-slot" style="padding: 8px 14px; font-size: 0.85rem;">
+          <i class="fa-solid fa-trash-can"></i> सर्व डेटा रिसेट करा (Reset All)
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 1: MAIN EDITION -->
+    <section class="upload-section-card">
+      <div class="section-title-wrap">
+        <h2><i class="fa-solid fa-newspaper" style="color:#2563eb;"></i> जालना मुख्य आवृत्ती (Main E-Paper)</h2>
+        <span id="mainStatusBadge"></span>
+      </div>
+      
+      <div class="main-upload-box">
+        <i class="fa-solid fa-file-pdf" style="font-size: 3rem; color: #2563eb; margin-bottom: 10px;"></i>
+        <h3>मुख्य ई-पेपर PDF किंवा पृष्ठांच्या इमेजेस निवडा</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin-top: 4px;">(Supports .pdf, .jpg, .jpeg, .png files)</p>
+        
+        <div class="file-input-wrapper">
+          <input type="file" id="mainPaperInput" accept=".pdf, image/*" multiple class="custom-file-input" />
+        </div>
+        
+        <button id="btnSaveMain" onclick="saveMainPaper()" class="btn-save-main">
+          <i class="fa-solid fa-floppy-disk"></i> <span>Save Main Paper (मुख्य अंक सेव्ह करा)</span>
+        </button>
+
+        <div id="mainPreviewContainer" style="margin-top: 15px;"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: REGIONAL EDITIONS -->
+    <section class="upload-section-card">
+      <div class="section-title-wrap">
+        <h2><i class="fa-solid fa-layer-group" style="color:var(--primary);"></i> विभागीय आवृत्त्या (Regional Editions)</h2>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">५ विभागीय आवृत्त्यांचे कव्हर किंवा अंक अपलोड करा</span>
+      </div>
+
+      <div class="regional-upload-grid">
+        
+        <!-- 1. जालना मुख्य -->
+        <div class="regional-form-card">
+          <div class="regional-card-title">
+            <span>१. जालना मुख्य</span>
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="regional-preview-box" id="prev_jalna_main">
+            <span class="no-preview"><i class="fa-regular fa-image"></i> कव्हर निवडा</span>
+          </div>
+          <input type="file" id="regionJalnaInput" accept=".pdf, image/*" class="regional-input" />
+          <button onclick="saveRegionalPaper('reg_jalna_main', 'regionJalnaInput', 'prev_jalna_main', 'जालना मुख्य')" class="btn-save-regional">
+            <i class="fa-solid fa-floppy-disk"></i> Save जालना मुख्य
+          </button>
+          <button onclick="clearSingleSlot('reg_jalna_main', 'prev_jalna_main')" class="btn-clear-slot">हटवा</button>
+        </div>
+
+        <!-- 2. भोकरदन - जाफ्राबाद -->
+        <div class="regional-form-card">
+          <div class="regional-card-title">
+            <span>२. भोकरदन - जाफ्राबाद</span>
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="regional-preview-box" id="prev_bhokardan">
+            <span class="no-preview"><i class="fa-regular fa-image"></i> कव्हर निवडा</span>
+          </div>
+          <input type="file" id="regionBhokardanInput" accept=".pdf, image/*" class="regional-input" />
+          <button onclick="saveRegionalPaper('reg_bhokardan', 'regionBhokardanInput', 'prev_bhokardan', 'भोकरदन - जाफ्राबाद')" class="btn-save-regional">
+            <i class="fa-solid fa-floppy-disk"></i> Save भोकरदन
+          </button>
+          <button onclick="clearSingleSlot('reg_bhokardan', 'prev_bhokardan')" class="btn-clear-slot">हटवा</button>
+        </div>
+
+        <!-- 3. परतूर - मंठा -->
+        <div class="regional-form-card">
+          <div class="regional-card-title">
+            <span>३. परतूर - मंठा</span>
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="regional-preview-box" id="prev_partur">
+            <span class="no-preview"><i class="fa-regular fa-image"></i> कव्हर निवडा</span>
+          </div>
+          <input type="file" id="regionParturInput" accept=".pdf, image/*" class="regional-input" />
+          <button onclick="saveRegionalPaper('reg_partur', 'regionParturInput', 'prev_partur', 'परतूर - मंठा')" class="btn-save-regional">
+            <i class="fa-solid fa-floppy-disk"></i> Save परतूर - मंठा
+          </button>
+          <button onclick="clearSingleSlot('reg_partur', 'prev_partur')" class="btn-clear-slot">हटवा</button>
+        </div>
+
+        <!-- 4. अंबड - घनसावंगी -->
+        <div class="regional-form-card">
+          <div class="regional-card-title">
+            <span>४. अंबड - घनसावंगी</span>
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="regional-preview-box" id="prev_ambad">
+            <span class="no-preview"><i class="fa-regular fa-image"></i> कव्हर निवडा</span>
+          </div>
+          <input type="file" id="regionAmbadInput" accept=".pdf, image/*" class="regional-input" />
+          <button onclick="saveRegionalPaper('reg_ambad', 'regionAmbadInput', 'prev_ambad', 'अंबड - घनसावंगी')" class="btn-save-regional">
+            <i class="fa-solid fa-floppy-disk"></i> Save अंबड
+          </button>
+          <button onclick="clearSingleSlot('reg_ambad', 'prev_ambad')" class="btn-clear-slot">हटवा</button>
+        </div>
+
+        <!-- 5. मराठवाडा एक्सप्रेस -->
+        <div class="regional-form-card">
+          <div class="regional-card-title">
+            <span>५. मराठवाडा एक्सप्रेस</span>
+            <i class="fa-solid fa-location-dot"></i>
+          </div>
+          <div class="regional-preview-box" id="prev_marathwada">
+            <span class="no-preview"><i class="fa-regular fa-image"></i> कव्हर निवडा</span>
+          </div>
+          <input type="file" id="regionMarathwadaInput" accept=".pdf, image/*" class="regional-input" />
+          <button onclick="saveRegionalPaper('reg_marathwada', 'regionMarathwadaInput', 'prev_marathwada', 'मराठवाडा एक्सप्रेस')" class="btn-save-regional">
+            <i class="fa-solid fa-floppy-disk"></i> Save मराठवाडा
+          </button>
+          <button onclick="clearSingleSlot('reg_marathwada', 'prev_marathwada')" class="btn-clear-slot">हटवा</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="main-footer" style="padding: 20px 0; margin-top: 40px; text-align: center;">
+    <div class="container">
+      <p style="color: #94a3b8; font-size: 0.85rem;">© २०२६ दैनिक लोकसार्थक ई-पेपर • ॲडमिन अपलोड डॅशबोर्ड</p>
+    </div>
+  </footer>
+
+  <!-- Storage Logic Script -->
+  <script>
+    // Load existing stored previews on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      loadStoredStatus();
+    });
+
+    function loadStoredStatus() {
+      // 1. Check Main Paper
+      const mainData = localStorage.getItem('mainEpaperData');
+      const mainStatusBadge = document.getElementById('mainStatusBadge');
+      const mainPreview = document.getElementById('mainPreviewContainer');
+      if (mainData) {
+        if (mainStatusBadge) mainStatusBadge.innerHTML = '<span class="status-badge">✅ मुख्य अंक सेव्ह आहे</span>';
+        if (mainPreview) {
+          if (mainData.startsWith('data:application/pdf')) {
+            mainPreview.innerHTML = '<p style="color:#2563eb; font-weight:600; font-size:0.9rem;">📄 PDF ई-पेपर सेव्ह आहे</p>';
+          } else {
+            mainPreview.innerHTML = '<p style="color:#16a34a; font-weight:600; font-size:0.9rem;">🖼️ इमेज ई-पेपर सेव्ह आहे</p>';
+          }
+        }
+      }
+
+      // 2. Check Regional Cards
+      const regions = [
+        { key: 'reg_jalna_main', prevId: 'prev_jalna_main', defaultThumb: 'assets/thumb_jalna.svg' },
+        { key: 'reg_bhokardan', prevId: 'prev_bhokardan', defaultThumb: 'assets/thumb_bhokardan.svg' },
+        { key: 'reg_partur', prevId: 'prev_partur', defaultThumb: 'assets/thumb_partur.svg' },
+        { key: 'reg_ambad', prevId: 'prev_ambad', defaultThumb: 'assets/thumb_ambad.svg' },
+        { key: 'reg_marathwada', prevId: 'prev_marathwada', defaultThumb: 'assets/thumb_marathwada.svg' }
+      ];
+
+      regions.forEach(r => {
+        const data = localStorage.getItem(r.key);
+        const box = document.getElementById(r.prevId);
+        if (box) {
+          if (data) {
+            box.innerHTML = `<img src="${data}" alt="कव्हर प्रीव्ह्यू" />`;
+          } else {
+            box.innerHTML = `<img src="${r.defaultThumb}" alt="डिफॉल्ट कव्हर" />`;
+          }
+        }
+      });
+    }
+
+    // Save Main Paper to localStorage
+    function saveMainPaper() {
+      const input = document.getElementById('mainPaperInput');
+      if (!input || !input.files || input.files.length === 0) {
+        alert('कृपया मुख्य ई-पेपरसाठी PDF किंवा इमेज फाईल निवडा.');
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        try {
+          const dataUrl = e.target.result;
+          localStorage.setItem('mainEpaperData', dataUrl);
+          localStorage.setItem('mainEpaperType', file.type);
+          localStorage.setItem('mainEpaperName', file.name);
+          alert('🎉 मुख्य ई-पेपर यशस्वीरित्या सेव्ह झाला! मुख्य पोर्टलवर आता हाच अंक दिसेल.');
+          loadStoredStatus();
+        } catch (err) {
+          console.error(err);
+          alert('डेटा सेव्ह करताना त्रुटी: फाईलचा आकार खूप मोठा असू शकतो. (Storage limit reached)');
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // Save Regional Paper to localStorage
+    function saveRegionalPaper(storageKey, inputId, previewBoxId, regionTitle) {
+      const input = document.getElementById(inputId);
+      if (!input || !input.files || input.files.length === 0) {
+        alert(`कृपया ${regionTitle} साठी फाईल निवडा.`);
+        return;
+      }
+
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        try {
+          const dataUrl = e.target.result;
+          localStorage.setItem(storageKey, dataUrl);
+          alert(`🎉 ${regionTitle} आवृत्ती यशस्वीरित्या सेव्ह झाली!`);
+          loadStoredStatus();
+        } catch (err) {
+          console.error(err);
+          alert('डेटा सेव्ह करताना त्रुटी: फाईलचा आकार खूप मोठा असू शकतो.');
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // Clear Single Slot
+    function clearSingleSlot(storageKey, previewBoxId) {
+      localStorage.removeItem(storageKey);
+      alert('हा स्लॉट रिसेट केला आहे.');
+      loadStoredStatus();
+    }
+
+    // Clear All Data
+    function clearAllData() {
+      if (confirm('तुम्हाला सर्व सेव्ह केलेला ई-पेपर डेटा रिसेट करायचा आहे का?')) {
+        localStorage.removeItem('mainEpaperData');
+        localStorage.removeItem('mainEpaperType');
+        localStorage.removeItem('mainEpaperName');
+        localStorage.removeItem('reg_jalna_main');
+        localStorage.removeItem('reg_bhokardan');
+        localStorage.removeItem('reg_partur');
+        localStorage.removeItem('reg_ambad');
+        localStorage.removeItem('reg_marathwada');
+        alert('सर्व डेटा यशस्वीरित्या रिसेट केला!');
+        loadStoredStatus();
+      }
+    }
+  </script>
+</body>
+</html>
