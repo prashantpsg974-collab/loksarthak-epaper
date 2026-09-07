@@ -325,6 +325,20 @@ button {
   flex-wrap: wrap;
 }
 
+.brand-logo-img {
+  height: 68px;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+
 .brand-text-en {
   font-family: var(--font-ui);
   font-size: 3.4rem;
@@ -379,11 +393,13 @@ button {
 }
 
 @media (max-width: 992px) {
+  .brand-logo-img { height: 56px; }
   .brand-text-en { font-size: 2.6rem; }
   .brand-badge-mr { font-size: 1.2rem; padding: 3px 10px; }
 }
 
 @media (max-width: 600px) {
+  .brand-logo-img { height: 46px; }
   .brand-text-en { font-size: 1.9rem; }
   .brand-badge-mr { font-size: 0.95rem; padding: 2px 8px; }
   .newspaper-tagline { font-size: 0.8rem; }
