@@ -81,7 +81,7 @@ const EPAPER_DATABASE = {
         },
         {
           id: 'p1_s4',
-          headline: 'मोसंबी संशोधन केंद्रात आधुनिक 'क्लायमेट-स्मार्ट' तंत्रज्ञानाचा प्रारंभ',
+          headline: 'मोसंबी संशोधन केंद्रात आधुनिक \'क्लायमेट-स्मार्ट\' तंत्रज्ञानाचा प्रारंभ',
           category: 'कृषी तंत्रज्ञान',
           summary: 'बदलत्या हवामानात मोसंबीचे उत्पादन वाढवण्यासाठी शास्त्रज्ञांनी विकसित केली नवी संकरित जात.',
           content: `जालना :\nजालना येथील राष्ट्रीय मोसंबी संशोधन केंद्रात कमी पाण्यात अधिक उत्पादन देणाऱ्या व कीड-रोग प्रतिकारक मोसंबी रोपांचे वितरण शेतकर्‍यांसाठी सुरू झाले आहे. शास्त्रज्ञांनी फळगळ रोखण्यासाठी विशेष जैविक उपाययोजनांची प्रात्यक्षिके शेतकऱ्यांना दिली.`,
@@ -208,7 +208,7 @@ const EPAPER_DATABASE = {
           id: 'p5_s1',
           headline: 'जालन्याच्या क्रीडा संकुलात राज्यस्तरीय कुस्ती स्पर्धेचे भव्य आयोजन',
           category: 'क्रीडा महोत्सव',
-          summary: 'महाराष्ट्रभरातून ५०० हून अधिक मल्ल सहभागी; 'महाराष्ट्र केसरी' मानांकनाची चुरस.',
+          summary: 'महाराष्ट्रभरातून ५०० हून अधिक मल्ल सहभागी; \'महाराष्ट्र केसरी\' मानांकनाची चुरस.',
           content: `जालना :\nजालना जिल्हा क्रीडा संकुलात भव्य राज्यस्तरीय कुस्ती स्पर्धेचा दिमाखदार प्रारंभ झाला. मराठवाडा, पश्चिम महाराष्ट्र आणि विदर्भातील नामांकित मल्लांनी पहिल्याच दिवशी आक्रमक डावपेच सादर करत प्रेक्षकांची मने जिंकली.`,
           rect: { x: 20, y: 140, w: 560, h: 400 },
           author: 'क्रीडा प्रतिनिधी'
@@ -1837,4 +1837,21 @@ function formatMarkdown(text) {
     .replace(/\n\n/g, '<br /><br />')
     .replace(/\n/g, '<br />');
 }
+
+// Expose all public utility and reader functions to window
+window.goToPage = goToPage;
+window.prevPage = prevPage;
+window.nextPage = nextPage;
+window.setZoom = setZoom;
+window.fitToWidth = fitToWidth;
+window.fitFullPaper = fitFullPaper;
+window.toggleFullscreen = toggleFullscreen;
+window.toggleCropTool = toggleCropTool;
+window.downloadCurrentPage = downloadCurrentPage;
+window.openArticleModal = openArticleModal;
+window.showToast = showToast;
+window.renderPage = renderPage;
+window.toggleSpeechSynthesis = toggleSpeechSynthesis;
+window.initArchiveCalendar = initArchiveCalendar;
+
 
