@@ -110,7 +110,7 @@
             </div>
           </a>
           <div class="newspaper-meta-strip">
-            <span>संपादक: प्रशांत गायकवाड</span>
+            <span>संपादक : गणेश राऊत, का संपादक : जयपाल राठोड</span>
             <span>•</span>
             <span>वर्ष ११ वे • अंक ३०५</span>
             <span>•</span>
@@ -269,69 +269,12 @@
 
       </div>
 
-      <!-- Regional Edition Cards Section -->
-      <section id="editions" class="editions-section">
-        <div class="section-header-title">
-          <span><i class="fa-solid fa-layer-group" style="color:var(--primary);"></i> दैनिक लोकसार्थक - विभागीय आवृत्त्या</span>
-          <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-muted);">तुमच्या परिसराचा अंक निवडा</span>
-        </div>
-
-        <div class="editions-grid">
-          <div class="edition-card" onclick="switchEdition('jalna_main')" title="जालना मुख्य आवृत्ती उघडा">
-            <div class="edition-card-header">
-              <span class="edition-name">जालना मुख्य</span>
-              <span class="edition-date">०४ सप्टें</span>
-            </div>
-            <div id="thumb_reg_jalna_main" class="edition-card-thumb">
-              <img src="assets/thumb_jalna.svg" alt="जालना मुख्य आवृत्ती" class="regional-thumbnail edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Jalna+E-Paper'" />
-            </div>
-            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
-          </div>
-
-          <div class="edition-card" onclick="switchEdition('bhokardan')" title="भोकरदन - जाफ्राबाद आवृत्ती उघडा">
-            <div class="edition-card-header">
-              <span class="edition-name">भोकरदन - जाफ्राबाद</span>
-              <span class="edition-date">०४ सप्टें</span>
-            </div>
-            <div id="thumb_reg_bhokardan" class="edition-card-thumb">
-              <img src="assets/thumb_bhokardan.svg" alt="भोकरदन - जाफ्राबाद आवृत्ती" class="regional-thumbnail edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Bhokardan+E-Paper'" />
-            </div>
-            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
-          </div>
-
-          <div class="edition-card" onclick="switchEdition('partur')" title="परतूर - मंठा आवृत्ती उघडा">
-            <div class="edition-card-header">
-              <span class="edition-name">परतूर - मंठा</span>
-              <span class="edition-date">०४ सप्टें</span>
-            </div>
-            <div id="thumb_reg_partur" class="edition-card-thumb">
-              <img src="assets/thumb_partur.svg" alt="परतूर - मंठा आवृत्ती" class="regional-thumbnail edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Partur+E-Paper'" />
-            </div>
-            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
-          </div>
-
-          <div class="edition-card" onclick="switchEdition('ambad')" title="अंबड - घनसावंगी आवृत्ती उघडा">
-            <div class="edition-card-header">
-              <span class="edition-name">अंबड - घनसावंगी</span>
-              <span class="edition-date">०४ सप्टें</span>
-            </div>
-            <div id="thumb_reg_ambad" class="edition-card-thumb">
-              <img src="assets/thumb_ambad.svg" alt="अंबड - घनसावंगी आवृत्ती" class="regional-thumbnail edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Ambad+E-Paper'" />
-            </div>
-            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
-          </div>
-
-          <div class="edition-card" onclick="switchEdition('marathwada')" title="मराठवाडा एक्सप्रेस आवृत्ती उघडा">
-            <div class="edition-card-header">
-              <span class="edition-name">मराठवाडा एक्सप्रेस</span>
-              <span class="edition-date">०४ सप्टें</span>
-            </div>
-            <div id="thumb_reg_marathwada" class="edition-card-thumb">
-              <img src="assets/thumb_marathwada.svg" alt="मराठवाडा एक्सप्रेस आवृत्ती" class="regional-thumbnail edition-thumb-img" onerror="this.src='https://via.placeholder.com/300x400?text=Marathwada+E-Paper'" />
-            </div>
-            <div class="edition-card-btn">अंक उघडा <i class="fa-solid fa-arrow-right"></i></div>
-          </div>
-        </div>
+      <!-- Custom News Image Upload Section -->
+      <section class="local-news-upload-section" style="margin: 30px 0;">
+        <h2 style="color: #c92a2a; border-left: 4px solid #c92a2a; padding-left: 10px; font-size: 1.25rem;">स्थानिक बातम्या (Local News)</h2>
+        <input type="file" id="newsImageUpload" accept="image/*" style="display: none;">
+        <button onclick="document.getElementById('newsImageUpload').click()" style="padding: 10px 20px; background: #c92a2a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 8px;">📷 Add Image</button>
+        <div id="newsImageContainer" style="width: 100%; max-width: 900px; border: 2px dashed #ccc; border-radius: 8px; min-height: 200px; display: flex; align-items: center; justify-content: center; background: #f9f9f9; color: #888; overflow: hidden;">Upload a news image to display it here</div>
       </section>
 
       <!-- Video News Gallery Section -->
@@ -943,6 +886,31 @@
         window.pageNum = pageNum;
         renderPdfPage(pageNum);
         updatePaginationUI();
+    });
+
+    // 4. Custom News Image Upload & Rendering Handler
+    document.getElementById('newsImageUpload')?.addEventListener('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('कृपया वैध इमेज फाईल (JPG/PNG/WebP) निवडा.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const container = document.getElementById('newsImageContainer');
+            if (container) {
+                container.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.alt = 'स्थानिक बातमी छायाचित्र';
+                img.style.cssText = 'width: 100%; height: auto; object-fit: contain;';
+                container.appendChild(img);
+            }
+        };
+        reader.readAsDataURL(file);
     });
 
     // Initialize initial quick pills and idb-keyval sync on load
