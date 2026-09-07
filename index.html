@@ -560,7 +560,7 @@
           </ul>
         </div>
 
-        <!-- Quick Connect -->
+        <!-- Quick Connect & Direct Upload Link -->
         <div>
           <h4 class="footer-col-title">डिजिटल सेवा</h4>
           <ul class="footer-links-list">
@@ -568,7 +568,7 @@
             <li><a href="#videoNews">व्हिडीओ बातम्या (TV)</a></li>
             <li><a href="https://chat.whatsapp.com/" target="_blank">व्हॉट्सॲप चॅनेल</a></li>
             <li><a href="javascript:void(0)" onclick="toggleCropTool()">कात्रण / क्लिपिंग टूल</a></li>
-            <li><a href="upload.html" style="color:var(--primary); font-weight:700;"><i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर अपलोड (Upload Dashboard)</a></li>
+            <li><a href="upload.html" style="color:var(--primary); font-weight:700;"><i class="fa-solid fa-cloud-arrow-up"></i> ई-पेपर अपलोड (Direct Upload)</a></li>
           </ul>
         </div>
       </div>
@@ -579,19 +579,21 @@
     </div>
   </footer>
 
-  <!-- PDF.js Engine for Native PDF E-Paper Rendering -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
   <!-- Application Script -->
   <script src="app.js"></script>
 
-  <!-- Exact PDF.js Rendering Engine Script with Pagination UI Wiring -->
+  <!-- PDF.js Rendering Engine with In-Memory Document Cache & Global Error Handling -->
   <script>
-    // Set the worker path for PDF.js (required for it to function)
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    // 1. Enforce PDF.js Worker Configuration with fallback
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
 
+    // 2. Global in-memory cache for PDF Document
+    let globalPdfDoc = null;
     let pdfDoc = null;
     let pageNum = 1; // PDF.js is 1-indexed
+    let currentRenderTask = null; // Track active render task to avoid collisions
     const scale = 1.8; // High-resolution rendering for sharp newspaper reading
 
     // Helper function to update quick page pill buttons
@@ -599,7 +601,8 @@
         const container = document.getElementById('quickPagePills');
         if (!container) return;
         container.innerHTML = '';
-        const pagesCount = total || (pdfDoc ? pdfDoc.numPages : 6);
+        const doc = globalPdfDoc || window.pdfDoc || pdfDoc;
+        const pagesCount = total || (doc ? doc.numPages : 6);
         const cur = current || pageNum;
 
         for (let i = 1; i <= pagesCount; i++) {
@@ -608,9 +611,11 @@
             btn.innerText = `पृष्ठ ${i}`;
             btn.title = `पृष्ठ ${i} वर जा`;
             btn.onclick = function() {
-                if (pdfDoc) {
+                const activeDoc = globalPdfDoc || window.pdfDoc || pdfDoc;
+                if (activeDoc) {
                     pageNum = i;
-                    renderPage(pageNum);
+                    window.pageNum = i;
+                    renderPdfPage(pageNum);
                     updatePaginationUI();
                 } else if (typeof goToPage === 'function') {
                     goToPage(i);
@@ -622,16 +627,17 @@
 
     // Helper function to update pagination controls & indicator text
     function updatePaginationUI() {
+        const doc = globalPdfDoc || window.pdfDoc || pdfDoc;
         const pageSelect = document.getElementById('pageSelect');
         if (pageSelect) {
             pageSelect.value = pageNum;
         }
         const pageIndicator = document.getElementById('pageIndicator');
-        if (pageIndicator && pdfDoc) {
-            pageIndicator.innerText = `${pageNum} / ${pdfDoc.numPages}`;
+        if (pageIndicator && doc) {
+            pageIndicator.innerText = `${pageNum} / ${doc.numPages}`;
         }
-        if (pdfDoc) {
-            updateQuickPagePillsUI(pdfDoc.numPages, pageNum);
+        if (doc) {
+            updateQuickPagePillsUI(doc.numPages, pageNum);
         }
     }
 
@@ -687,16 +693,29 @@
     }
     window.fitFullPaper = fitFullPaper;
 
-    // Function to render specific PDF page
+    // Render the specific PDF page onto canvas using cached globalPdfDoc (NO re-fetching from IndexedDB)
     function renderPdfPage(num) {
-        const doc = window.pdfDoc || pdfDoc;
-        if (!doc) return;
+        const doc = globalPdfDoc || window.pdfDoc || pdfDoc;
+        if (!doc) {
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
+            return;
+        }
+
+        // Cancel previous render task if user switched pages quickly
+        if (currentRenderTask) {
+            try {
+                currentRenderTask.cancel();
+            } catch (e) {}
+        }
 
         doc.getPage(num).then(function(page) {
             const viewport = page.getViewport({ scale: scale });
             const canvas = document.getElementById('epaperCanvas');
             if (!canvas) {
                 console.error("Canvas element with ID 'epaperCanvas' not found.");
+                const loader = document.getElementById('loader');
+                if (loader) loader.style.display = 'none';
                 return;
             }
             const ctx = canvas.getContext('2d');
@@ -707,60 +726,37 @@
                 canvasContext: ctx,
                 viewport: viewport
             };
-            page.render(renderContext).promise.then(function() {
+
+            const renderTask = page.render(renderContext);
+            currentRenderTask = renderTask;
+
+            renderTask.promise.then(function() {
+                currentRenderTask = null;
                 const container = document.getElementById('paperPageContainer');
                 if (container && (!window.state || !window.state.zoomLevel || window.state.zoomLevel < 0.6)) {
                     setEpaperZoom(1.0);
                 }
+                // Dismiss any loading indicators
+                const loader = document.getElementById('loader');
+                if (loader) loader.style.display = 'none';
+            }).catch(function(err) {
+                if (err && err.name === 'RenderingCancelledException') {
+                    return; // Normal cancellation on fast page flip
+                }
+                console.error('Page render error:', err);
+                const loader = document.getElementById('loader');
+                if (loader) loader.style.display = 'none';
             });
+        }).catch(function(err) {
+            console.error('GetPage error:', err);
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
         });
     }
     window.renderPdfPage = renderPdfPage;
+    window.renderPage = renderPdfPage;
 
-    // Load PDF from ArrayBuffer / Uint8Array
-    function loadPdfFromBytes(typedarray) {
-        const loadingTask = pdfjsLib.getDocument({ data: typedarray });
-        return loadingTask.promise.then(function(pdf) {
-            pdfDoc = pdf;
-            window.pdfDoc = pdf;
-            if (typeof state !== 'undefined') {
-                state.pdfDoc = pdf;
-                state.totalPages = pdf.numPages;
-            }
-            pageNum = 1;
-            window.pageNum = 1;
-
-            const pageSelect = document.getElementById('pageSelect');
-            if (pageSelect) {
-                pageSelect.innerHTML = '';
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const opt = document.createElement('option');
-                    opt.value = i;
-                    opt.innerText = `पृष्ठ ${i}`;
-                    pageSelect.appendChild(opt);
-                }
-                pageSelect.value = 1;
-            }
-
-            const pageIndicator = document.getElementById('pageIndicator');
-            if (pageIndicator) {
-                pageIndicator.innerText = `1 / ${pdf.numPages}`;
-            }
-
-            const sidebarPageCount = document.getElementById('sidebarPageCount');
-            if (sidebarPageCount) {
-                sidebarPageCount.innerText = `${pdf.numPages} पाने`;
-            }
-
-            updateQuickPagePillsUI(pdf.numPages, 1);
-            setEpaperZoom(1.0);
-            renderPdfPage(1);
-        }).catch(function(error) {
-            console.error('Error loading PDF from bytes:', error);
-        });
-    }
-
-    // Async Initialization and Rendering function with idb-keyval
+    // Async Initialization: Fetches main paper ONCE from IndexedDB and caches in memory
     async function initEpaperFromDB() {
         try {
             if (typeof idbKeyval === 'undefined') {
@@ -768,7 +764,7 @@
                 return;
             }
 
-            // 1. Fetch Main Paper Data
+            // 1. Fetch Main Paper Data ONLY ONCE from IndexedDB
             const mainData = await idbKeyval.get('main_paper');
             const mainType = await idbKeyval.get('main_paper_type');
 
@@ -783,15 +779,60 @@
                 let isPdf = (mainType === 'application/pdf');
                 if (arrayBuffer && !isPdf) {
                     const header = new Uint8Array(arrayBuffer.slice(0, 5));
+                    // Check PDF magic bytes '%PDF'
                     if (header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44 && header[3] === 0x46) {
                         isPdf = true;
                     }
                 }
 
                 if (isPdf && arrayBuffer && typeof pdfjsLib !== 'undefined') {
-                    const uint8Array = new Uint8Array(arrayBuffer);
-                    await loadPdfFromBytes(uint8Array);
+                    try {
+                        const uint8Array = new Uint8Array(arrayBuffer);
+                        const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+                        
+                        // Cache the loaded PDF document in memory globally
+                        globalPdfDoc = await loadingTask.promise;
+                        pdfDoc = globalPdfDoc;
+                        window.pdfDoc = globalPdfDoc;
+                        if (typeof state !== 'undefined') {
+                            state.pdfDoc = globalPdfDoc;
+                            state.totalPages = globalPdfDoc.numPages;
+                        }
+                        pageNum = 1;
+                        window.pageNum = 1;
+
+                        const pageSelect = document.getElementById('pageSelect');
+                        if (pageSelect) {
+                            pageSelect.innerHTML = '';
+                            for (let i = 1; i <= globalPdfDoc.numPages; i++) {
+                                const opt = document.createElement('option');
+                                opt.value = i;
+                                opt.innerText = `पृष्ठ ${i}`;
+                                pageSelect.appendChild(opt);
+                            }
+                            pageSelect.value = 1;
+                        }
+
+                        const pageIndicator = document.getElementById('pageIndicator');
+                        if (pageIndicator) {
+                            pageIndicator.innerText = `1 / ${globalPdfDoc.numPages}`;
+                        }
+
+                        const sidebarPageCount = document.getElementById('sidebarPageCount');
+                        if (sidebarPageCount) {
+                            sidebarPageCount.innerText = `${globalPdfDoc.numPages} पाने`;
+                        }
+
+                        updateQuickPagePillsUI(globalPdfDoc.numPages, 1);
+                        setEpaperZoom(1.0);
+                        renderPdfPage(1);
+                    } catch (pdfLoadErr) {
+                        console.error('Error loading PDF with PDF.js:', pdfLoadErr);
+                        const loader = document.getElementById('loader');
+                        if (loader) loader.style.display = 'none';
+                    }
                 } else if (mainData) {
+                    // Image format rendering
                     let blob = null;
                     if (mainData instanceof Blob) {
                         blob = mainData;
@@ -816,6 +857,12 @@
                             if (sidebarPageCount) sidebarPageCount.innerText = `1 पान`;
                             updateQuickPagePillsUI(1, 1);
                             setEpaperZoom(1.0);
+                            const loader = document.getElementById('loader');
+                            if (loader) loader.style.display = 'none';
+                        };
+                        img.onerror = function() {
+                            const loader = document.getElementById('loader');
+                            if (loader) loader.style.display = 'none';
                         };
                         img.src = imgUrl;
                     }
@@ -832,40 +879,46 @@
             ];
 
             for (const reg of regionalKeys) {
-                const regData = await idbKeyval.get(reg.key);
-                const regType = await idbKeyval.get(`${reg.key}_type`);
-                if (regData) {
-                    let blob = null;
-                    if (regData instanceof Blob) {
-                        blob = regData;
-                    } else if (regData instanceof ArrayBuffer) {
-                        blob = new Blob([regData], { type: regType || 'image/jpeg' });
-                    }
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const container = document.getElementById(reg.elemId);
-                        if (container) {
-                            const imgTag = container.querySelector('img');
-                            if (imgTag) {
-                                imgTag.src = url;
-                                imgTag.style.cssText = 'width: 100%; height: 200px; object-fit: cover;';
-                            } else {
-                                container.innerHTML = `<img src="${url}" alt="विभागीय आवृत्ती" class="regional-thumbnail edition-thumb-img" style="width: 100%; height: 200px; object-fit: cover;" />`;
+                try {
+                    const regData = await idbKeyval.get(reg.key);
+                    const regType = await idbKeyval.get(`${reg.key}_type`);
+                    if (regData) {
+                        let blob = null;
+                        if (regData instanceof Blob) {
+                            blob = regData;
+                        } else if (regData instanceof ArrayBuffer) {
+                            blob = new Blob([regData], { type: regType || 'image/jpeg' });
+                        }
+                        if (blob) {
+                            const url = URL.createObjectURL(blob);
+                            const container = document.getElementById(reg.elemId);
+                            if (container) {
+                                const imgTag = container.querySelector('img');
+                                if (imgTag) {
+                                    imgTag.src = url;
+                                    imgTag.style.cssText = 'width: 100%; height: 200px; object-fit: cover;';
+                                } else {
+                                    container.innerHTML = `<img src="${url}" alt="विभागीय आवृत्ती" class="regional-thumbnail edition-thumb-img" style="width: 100%; height: 200px; object-fit: cover;" />`;
+                                }
                             }
                         }
                     }
+                } catch (regErr) {
+                    console.error(`Error loading regional card ${reg.key}:`, regErr);
                 }
             }
         } catch (err) {
             console.error('Error during initEpaperFromDB:', err);
+        } finally {
+            const loader = document.getElementById('loader');
+            if (loader) loader.style.display = 'none';
         }
     }
 
-    // 3. Navigation Controls Event Listeners
-    // Previous Button (<) Listener
+    // 3. Navigation Controls Event Listeners (Uses cached globalPdfDoc in memory)
     document.getElementById('prevPage')?.addEventListener('click', function() {
-        if (!window.pdfDoc && !pdfDoc) return;
-        const doc = window.pdfDoc || pdfDoc;
+        const doc = globalPdfDoc || window.pdfDoc || pdfDoc;
+        if (!doc) return;
         if (pageNum <= 1) return;
         pageNum--;
         window.pageNum = pageNum;
@@ -873,10 +926,9 @@
         updatePaginationUI();
     });
 
-    // Next Button (>) Listener
     document.getElementById('nextPage')?.addEventListener('click', function() {
-        if (!window.pdfDoc && !pdfDoc) return;
-        const doc = window.pdfDoc || pdfDoc;
+        const doc = globalPdfDoc || window.pdfDoc || pdfDoc;
+        if (!doc) return;
         if (pageNum >= doc.numPages) return;
         pageNum++;
         window.pageNum = pageNum;
@@ -884,9 +936,9 @@
         updatePaginationUI();
     });
 
-    // Dropdown Change Listener
     document.getElementById('pageSelect')?.addEventListener('change', function() {
-        if (!window.pdfDoc && !pdfDoc) return;
+        const doc = globalPdfDoc || window.pdfDoc || pdfDoc;
+        if (!doc) return;
         pageNum = parseInt(this.value, 10);
         window.pageNum = pageNum;
         renderPdfPage(pageNum);
