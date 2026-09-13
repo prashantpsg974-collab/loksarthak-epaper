@@ -7,7 +7,8 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { streamText } from 'ai';
+import { streamText, generateText } from 'ai';
+import Parser from 'rss-parser';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -253,6 +254,185 @@ ${newsContext ? `\nToday's Marathi Newspaper Content:\n${newsContext}` : ''}`;
   } catch (error) {
     console.error('AI chat error:', error);
     res.status(500).json({ error: 'AI Agent error: ' + error.message });
+  }
+});
+
+// --------------------------------------------------------------------------
+// 5. AUTOMATED AI GLOBAL NEWS PIPELINE (/api/global-news)
+// --------------------------------------------------------------------------
+const rssParser = new Parser({
+  timeout: 10000,
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) DainikLoksarthakBot/1.0'
+  }
+});
+
+const newsCache = new Map();
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes TTL
+
+const RSS_FEEDS = {
+  world: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-IN&gl=IN&ceid=IN:en',
+  national: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=en-IN&gl=IN&ceid=IN:en',
+  business: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-IN&gl=IN&ceid=IN:en',
+  tech: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-IN&gl=IN&ceid=IN:en',
+  all: 'https://news.google.com/rss?hl=en-IN&gl=IN&ceid=IN:en'
+};
+
+const MARATHI_FALLBACK_FEEDS = {
+  world: 'https://news.google.com/rss/headlines/section/topic/WORLD?hl=mr&gl=IN&ceid=IN:mr',
+  national: 'https://news.google.com/rss/headlines/section/topic/NATION?hl=mr&gl=IN&ceid=IN:mr',
+  business: 'https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=mr&gl=IN&ceid=IN:mr',
+  tech: 'https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=mr&gl=IN&ceid=IN:mr',
+  all: 'https://news.google.com/rss?hl=mr&gl=IN&ceid=IN:mr'
+};
+
+app.get('/api/global-news', async (req, res) => {
+  try {
+    const category = req.query.category || 'all';
+    const forceRefresh = req.query.refresh === 'true';
+    const cacheKey = `news_${category}`;
+
+    const cached = newsCache.get(cacheKey);
+    if (!forceRefresh && cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+      return res.json({
+        success: true,
+        source: 'cache',
+        category,
+        lastUpdated: new Date(cached.timestamp).toISOString(),
+        news: cached.data
+      });
+    }
+
+    const feedUrl = RSS_FEEDS[category] || RSS_FEEDS.all;
+    let rawFeed;
+    try {
+      rawFeed = await rssParser.parseURL(feedUrl);
+    } catch (feedErr) {
+      console.warn('Primary RSS feed fetch failed, attempting fallback:', feedErr.message);
+      const fallbackUrl = MARATHI_FALLBACK_FEEDS[category] || MARATHI_FALLBACK_FEEDS.all;
+      rawFeed = await rssParser.parseURL(fallbackUrl);
+    }
+
+    const rawItems = (rawFeed.items || []).slice(0, 8).map((item, index) => {
+      let headline = item.title || '';
+      let sourceName = item.creator || item.author || 'वृत्तसंस्था';
+      const lastDash = headline.lastIndexOf(' - ');
+      if (lastDash > -1) {
+        sourceName = headline.substring(lastDash + 3).trim();
+        headline = headline.substring(0, lastDash).trim();
+      }
+      return {
+        id: `gn_${category}_${index}`,
+        originalTitle: headline,
+        source: sourceName,
+        pubDate: item.pubDate || new Date().toISOString(),
+        link: item.link || '#'
+      };
+    });
+
+    let processedItems = [];
+    const hasAiKey = Boolean(process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY);
+
+    if (hasAiKey && rawItems.length > 0) {
+      try {
+        let aiModel;
+        if (process.env.OPENAI_API_KEY) {
+          aiModel = openai('gpt-4o-mini');
+        } else {
+          aiModel = anthropic('claude-3-5-sonnet-20241022');
+        }
+
+        const prompt = `You are an expert Marathi newspaper editor and translator for "Dainik Loksarthak" (दैनिक लोकसार्थक).
+Translate and summarize the following English news articles into clear, engaging, professional Marathi (शुद्ध व प्रभावी वृत्तपत्र मराठी).
+For each item, provide:
+1. marathiTitle: Crisp, catchy Marathi headline
+2. marathiSummary: 2 concise Marathi bullet points or summary (max 35 words)
+3. categoryLabel: Category tag in Marathi (उदा. जागतिक, राष्ट्रीय, तंत्रज्ञान, अर्थविश्व)
+
+Here are the news items:
+${JSON.stringify(rawItems.map(i => ({ id: i.id, title: i.originalTitle, source: i.source })), null, 2)}
+
+Respond with ONLY a valid JSON array matching this format:
+[
+  {
+    "id": "gn_category_0",
+    "marathiTitle": "मराठी शीर्षक",
+    "marathiSummary": "संक्षिप्त मराठी माहिती / सारांश",
+    "categoryLabel": "विभाग"
+  }
+]`;
+
+        const aiResponse = await generateText({
+          model: aiModel,
+          prompt: prompt,
+          temperature: 0.3,
+          maxTokens: 1500
+        });
+
+        let jsonText = aiResponse.text.trim();
+        if (jsonText.startsWith('```json')) {
+          jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (jsonText.startsWith('```')) {
+          jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+
+        const translatedData = JSON.parse(jsonText);
+        const translationMap = new Map(translatedData.map(t => [t.id, t]));
+
+        processedItems = rawItems.map(item => {
+          const trans = translationMap.get(item.id) || {};
+          return {
+            id: item.id,
+            title: trans.marathiTitle || item.originalTitle,
+            summary: trans.marathiSummary || 'दैनिक लोकसार्थक विशेष बातमी सारांश.',
+            category: trans.categoryLabel || (category === 'world' ? 'जागतिक' : category === 'national' ? 'राष्ट्रीय' : category === 'business' ? 'व्यापार' : category === 'tech' ? 'तंत्रज्ञान' : 'ठळक बातमी'),
+            source: item.source,
+            pubDate: item.pubDate,
+            link: item.link,
+            isAiTranslated: true
+          };
+        });
+      } catch (aiErr) {
+        console.warn('AI translation error, falling back to clean feed display:', aiErr.message);
+        processedItems = rawItems.map(item => ({
+          id: item.id,
+          title: item.originalTitle,
+          summary: 'अधिक माहितीसाठी मूळ बातमी लिंकवर क्लिक करा.',
+          category: category === 'world' ? 'जागतिक' : category === 'national' ? 'राष्ट्रीय' : category === 'business' ? 'व्यापार' : category === 'tech' ? 'तंत्रज्ञान' : 'ठळक बातमी',
+          source: item.source,
+          pubDate: item.pubDate,
+          link: item.link,
+          isAiTranslated: false
+        }));
+      }
+    } else {
+      processedItems = rawItems.map(item => ({
+        id: item.id,
+        title: item.originalTitle,
+        summary: 'दैनिक लोकसार्थक डिजिटल बातमी अपडेट्स.',
+        category: category === 'world' ? 'जागतिक' : category === 'national' ? 'राष्ट्रीय' : category === 'business' ? 'व्यापार' : category === 'tech' ? 'तंत्रज्ञान' : 'ठळक बातमी',
+        source: item.source,
+        pubDate: item.pubDate,
+        link: item.link,
+        isAiTranslated: false
+      }));
+    }
+
+    newsCache.set(cacheKey, {
+      timestamp: Date.now(),
+      data: processedItems
+    });
+
+    res.json({
+      success: true,
+      source: 'live',
+      category,
+      lastUpdated: new Date().toISOString(),
+      news: processedItems
+    });
+  } catch (error) {
+    console.error('Global news pipeline error:', error);
+    res.status(500).json({ error: 'बातमी संकलनात त्रुटी आली: ' + error.message });
   }
 });
 

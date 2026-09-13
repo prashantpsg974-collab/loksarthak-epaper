@@ -138,7 +138,7 @@
           <li class="nav-item"><a href="#jalna" onclick="goToPage(2)">जालना शहर</a></li>
           <li class="nav-item"><a href="#marathwada" onclick="goToPage(3)">मराठवाडा</a></li>
           <li class="nav-item"><a href="#agri" onclick="goToPage(4)">शेती व बाजारभाव</a></li>
-          <li class="nav-item"><a href="#sports" onclick="goToPage(5)">क्रीडा व देश-विदेश</a></li>
+          <li class="nav-item"><a href="#globalNews"><i class="fa-solid fa-globe"></i> देश-विदेश (AI)</a></li>
           <li class="nav-item"><a href="#editorial" onclick="goToPage(6)">संपादकीय</a></li>
           <li class="nav-item highlight"><a href="#videoNews"><i class="fa-solid fa-play"></i> व्हिडीओ बातम्या</a></li>
         </ul>
@@ -285,6 +285,48 @@
 
         <!-- 3. News Content Input (Under Title) -->
         <textarea id="newsContentInput" placeholder="बातमीचा सविस्तर तपशील येथे लिहा (Write detailed news content here)..." style="width: 100%; max-width: 900px; min-height: 200px; padding: 12px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 4px; resize: vertical; display: block; line-height: 1.5;"></textarea>
+      </section>
+
+      <!-- 🌍 Automated AI Global & National News Section -->
+      <section id="globalNews" class="global-news-section">
+        <div class="global-news-header">
+          <div class="global-news-title-wrap">
+            <div class="global-news-badge">
+              <span class="pulse-dot"></span>
+              <i class="fa-solid fa-earth-americas"></i>
+              <span>लाईव्ह देश - विदेश घडामोडी</span>
+            </div>
+            <span class="ai-powered-pill"><i class="fa-solid fa-wand-magic-sparkles"></i> AI मराठी सारांश</span>
+          </div>
+
+          <!-- Category Filters & Refresh Controls -->
+          <div class="global-news-controls">
+            <div class="news-filter-tabs" id="globalNewsFilterTabs">
+              <button class="filter-tab-btn active" data-cat="all" onclick="filterGlobalNews('all')">सर्व बातम्या</button>
+              <button class="filter-tab-btn" data-cat="world" onclick="filterGlobalNews('world')">🌍 जागतिक</button>
+              <button class="filter-tab-btn" data-cat="national" onclick="filterGlobalNews('national')">🇮🇳 देश</button>
+              <button class="filter-tab-btn" data-cat="business" onclick="filterGlobalNews('business')">📈 व्यापार</button>
+              <button class="filter-tab-btn" data-cat="tech" onclick="filterGlobalNews('tech')">💻 तंत्रज्ञान</button>
+            </div>
+            <button id="btnRefreshGlobalNews" class="btn-refresh-news" onclick="refreshGlobalNews()" title="ताजी बातमी रीफ्रेश करा">
+              <i class="fa-solid fa-arrows-rotate"></i> <span>रीफ्रेश</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Meta status line -->
+        <div class="global-news-meta-bar">
+          <span id="globalNewsLastUpdated"><i class="fa-regular fa-clock"></i> शेवटचे अपडेट: काही सेकंदांपूर्वी</span>
+          <span class="global-news-source-tag"><i class="fa-solid fa-shield-halved"></i> आंतरराष्ट्रीय व राष्ट्रीय वृत्तसंस्था संकलन</span>
+        </div>
+
+        <!-- News Grid Container -->
+        <div id="globalNewsGrid" class="global-news-grid">
+          <div class="global-news-loading">
+            <div class="spinner-dot"></div>
+            <span>ताज्या जागतिक घडामोडी व AI सारांश लोड होत आहे...</span>
+          </div>
+        </div>
       </section>
 
       <!-- Video News Gallery Section -->
