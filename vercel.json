@@ -33,11 +33,11 @@
     },
     {
       "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "dest": "server.js"
     },
     {
       "src": "/uploads/(.*)",
-      "dest": "/uploads/$1"
+      "dest": "server.js"
     },
     {
       "src": "/api/(.*)",
